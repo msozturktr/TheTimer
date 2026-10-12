@@ -32,6 +32,8 @@ public partial class App : Application
             var notifier = new FreedesktopNotifier();
             var (repository, activeStore, planRepository, databaseError) = CreateRepository();
             var viewModel = AppComposition.Create(repository, activeStore, planRepository, TimeProvider.System, notifier);
+            viewModel.AttachSettings(new TheTimer.Core.Settings.JsonSettingsStore(
+                Path.Combine(AppPaths.FromEnvironment().DataDirectory, "settings.json")));
             if (databaseError)
                 _ = NotifyDatabaseErrorAsync(notifier);
             var window = new MainWindow { DataContext = viewModel };

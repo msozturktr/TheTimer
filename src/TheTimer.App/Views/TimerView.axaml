@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:TheTimer.App.ViewModels"
+             xmlns:svc="using:TheTimer.App.Services"
              xmlns:c="using:TheTimer.App.Controls"
              xmlns:ct="using:TheTimer.App.Controls.Timer"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -169,6 +170,34 @@
 
                 <StackPanel Grid.Row="1" Margin="0,30,0,0" Spacing="12" HorizontalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="26" HorizontalAlignment="Center">
+                        <Panel Width="48" Height="48" VerticalAlignment="Center">
+                            <Button Classes="round" Width="48" Height="48" ToolTip.Tip="Bitiş sesi">
+                                <Panel>
+                                    <c:Icon Data="M12 3a5 5 0 0 0-5 5v4l-2 3h14l-2-3V8a5 5 0 0 0-5-5zM10 18a2 2 0 0 0 4 0" Width="20" Height="20"
+                                            IsVisible="{Binding SoundEnabled}" />
+                                    <c:Icon Data="M12 3a5 5 0 0 0-5 5v4l-2 3h14l-2-3V8a5 5 0 0 0-5-5zM10 18a2 2 0 0 0 4 0M4 4l16 16" Width="20" Height="20"
+                                            Opacity="0.5" IsVisible="{Binding !SoundEnabled}" />
+                                </Panel>
+                                <Button.Flyout>
+                                    <Flyout Placement="Top">
+                                        <StackPanel Spacing="12" Width="220">
+                                            <TextBlock Text="BİTİŞ SESİ" Classes="overline" />
+                                            <ToggleSwitch IsChecked="{Binding SoundEnabled}" OnContent="Açık" OffContent="Kapalı" />
+                                            <ListBox ItemsSource="{Binding SoundOptions}" SelectedItem="{Binding SelectedSound}" IsEnabled="{Binding SoundEnabled}"
+                                                     Background="Transparent">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="svc:SoundOption">
+                                                        <TextBlock Text="{Binding Name}" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                            <Button Classes="ghost" Content="Dinle" Command="{Binding PreviewSoundCommand}" IsEnabled="{Binding SoundEnabled}"
+                                                    HorizontalAlignment="Left" />
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </Panel>
                         <Panel Width="48" Height="48" VerticalAlignment="Center">
                             <Button Classes="round" Width="48" Height="48" Command="{Binding StopCommand}" ToolTip.Tip="Durdur">
                                 <c:Icon Data="{StaticResource Icon.Stop}" Width="20" Height="20" />
