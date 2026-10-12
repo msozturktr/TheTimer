@@ -172,7 +172,7 @@
                     <!-- Primary button stays centred: equal side columns around it. -->
                     <Grid ColumnDefinitions="*,Auto,*" Width="380">
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="20" HorizontalAlignment="Right" Margin="0,0,26,0">
-                        <Panel Width="48" Height="48" VerticalAlignment="Center" IsVisible="{Binding IsCountdownMode}">
+                        <Panel Width="48" Height="48" VerticalAlignment="Center" IsVisible="{Binding !IsStopwatchMode}">
                             <Button Classes="round" Width="48" Height="48" ToolTip.Tip="Bitiş sesi">
                                 <Panel>
                                     <c:Icon Data="M12 3a5 5 0 0 0-5 5v4l-2 3h14l-2-3V8a5 5 0 0 0-5-5zM10 18a2 2 0 0 0 4 0" Width="20" Height="20"
