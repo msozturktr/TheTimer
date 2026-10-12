@@ -483,3 +483,5 @@ $RECYCLE.BIN/
 
 # Flatpak build cache
 .flatpak-builder/
+
+notlar.md
