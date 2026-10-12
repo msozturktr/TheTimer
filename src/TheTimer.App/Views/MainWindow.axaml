@@ -7,6 +7,7 @@
         x:Class="TheTimer.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Width="420" Height="620"
+        Icon="/Assets/thetimer.png"
         Title="TheTimer">
 
     <TabControl>

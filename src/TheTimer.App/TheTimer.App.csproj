@@ -21,6 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaResource Include="Assets\thetimer.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TheTimer.Core\TheTimer.Core.csproj" />
   </ItemGroup>
 </Project>

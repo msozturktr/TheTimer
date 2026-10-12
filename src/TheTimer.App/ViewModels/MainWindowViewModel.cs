@@ -28,6 +28,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly DispatcherTimer _dayWatcher;
     private static readonly CultureInfo TrCulture = new("tr-TR");
     private bool _runningBreak;
+    private bool _backgroundNoticeShown;
     private DateOnly _loadedDay;
 
     public MainWindowViewModel(SessionTimer timer, ISessionRepository repository, TimeProvider timeProvider, INotifier notifier)
@@ -109,6 +110,9 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool HasSessions { get; set; }
 
+    [ObservableProperty]
+    public partial string TrayToolTip { get; set; } = "TheTimer";
+
     public ObservableCollection<SessionItemViewModel> TodaySessions { get; } = [];
 
     public ObservableCollection<TaskTotalItemViewModel> TaskTotals { get; } = [];
@@ -177,6 +181,28 @@ public partial class MainWindowViewModel : ViewModelBase
             _repository.Add(session);
             RefreshTodaySessions();
         }
+    }
+
+    /// <summary>True when closing the window should keep a running/paused session alive in the tray.</summary>
+    public bool ShouldHideOnClose()
+    {
+        if (_timer.State == TimerState.Idle)
+            return false;
+
+        if (!_backgroundNoticeShown)
+        {
+            _backgroundNoticeShown = true;
+            Notify("TheTimer arka planda", "Zamanlayıcı tepside çalışmaya devam ediyor");
+        }
+
+        return true;
+    }
+
+    /// <summary>Stops the active session (if any) through the regular Stop path.</summary>
+    public void StopActiveSession()
+    {
+        if (StopCommand.CanExecute(null))
+            StopCommand.Execute(null);
     }
 
     partial void OnModeChanged(TimerMode value)
@@ -289,6 +315,20 @@ public partial class MainWindowViewModel : ViewModelBase
                 TimerMode.Pomodoro => _cycle.CurrentDuration,
                 _ => TimeSpan.Zero,
             });
+
+        UpdateTrayToolTip();
+    }
+
+    private void UpdateTrayToolTip()
+    {
+        if (_timer.State == TimerState.Idle)
+        {
+            TrayToolTip = "TheTimer";
+            return;
+        }
+
+        var task = _runningBreak ? "Mola" : TaskName;
+        TrayToolTip = $"TheTimer — {StateText} {ElapsedText} · {task}";
     }
 
     private DateOnly CurrentDay() =>
