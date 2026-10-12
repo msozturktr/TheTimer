@@ -1,0 +1,19 @@
+pkgbase = thetimer-bin
+	pkgdesc = Time tracking, countdown and daily planning application (prebuilt)
+	pkgver = 0.3.0
+	pkgrel = 1
+	url = https://github.com/msozturktr/TheTimer
+	arch = x86_64
+	license = MIT
+	depends = fontconfig
+	depends = libx11
+	depends = libice
+	depends = libsm
+	depends = icu
+	provides = thetimer
+	conflicts = thetimer
+	options = !strip
+	source = thetimer-0.3.0-linux-x64.tar.gz::https://github.com/msozturktr/TheTimer/releases/download/v0.3.0/thetimer-0.3.0-linux-x64.tar.gz
+	sha256sums = SKIP
+
+pkgname = thetimer-bin

@@ -1,0 +1,27 @@
+# Maintainer: msozturktr
+pkgname=thetimer-bin
+_name=thetimer
+pkgver=0.3.0
+pkgrel=1
+pkgdesc='Time tracking, countdown and daily planning application (prebuilt)'
+arch=('x86_64')
+url='https://github.com/msozturktr/TheTimer'
+license=('MIT')
+depends=('fontconfig' 'libx11' 'libice' 'libsm' 'icu')
+provides=('thetimer')
+conflicts=('thetimer')
+options=('!strip')
+source=("$_name-$pkgver-linux-x64.tar.gz::$url/releases/download/v$pkgver/$_name-$pkgver-linux-x64.tar.gz")
+# Must be replaced for every release: run `updpkgsums` (pacman-contrib) in this directory
+# after the release asset exists, then regenerate .SRCINFO with `makepkg --printsrcinfo`.
+sha256sums=('SKIP')
+
+package() {
+  cd "$_name-$pkgver-linux-x64"
+  install -d "$pkgdir/usr/lib/thetimer" "$pkgdir/usr/bin"
+  cp -a app/. "$pkgdir/usr/lib/thetimer/"
+  ln -s /usr/lib/thetimer/TheTimer "$pkgdir/usr/bin/thetimer"
+  install -Dm644 thetimer.desktop "$pkgdir/usr/share/applications/io.github.msozturktr.TheTimer.desktop"
+  install -Dm644 thetimer.png "$pkgdir/usr/share/icons/hicolor/256x256/apps/thetimer.png"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

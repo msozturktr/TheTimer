@@ -21,18 +21,58 @@
 
 ## Kurulum  
 
-### Flatpak  
+Hazır paketler [Releases](https://github.com/msozturktr/TheTimer/releases) sayfasında (`<ver>` = sürüm numarası, örn. `0.3.0`).
+
+### Debian / Ubuntu  
+```bash
+sudo apt install ./thetimer_<ver>_amd64.deb
+```
+
+### Fedora  
+```bash
+sudo dnf install ./thetimer-<ver>-1.x86_64.rpm
+```
+
+### Flatpak (paket dosyası)  
+```bash
+flatpak install --user ./TheTimer-<ver>.flatpak
+flatpak run io.github.msozturktr.TheTimer
+```
+*Not:* Çalışma ortamı (runtime) Flathub'dan indirilir; `flathub` remote'u ekli olmalı.  
+
+### AppImage (hazır)  
+```bash
+chmod +x TheTimer-<ver>-x86_64.AppImage
+./TheTimer-<ver>-x86_64.AppImage
+```
+
+### Arch Linux  
+AUR'dan `thetimer-bin` ya da bu depodan:
+```bash
+cd packaging/aur && makepkg -si
+```
+
+### Tarball  
+```bash
+tar xzf thetimer-<ver>-linux-x64.tar.gz
+./thetimer-<ver>-linux-x64/app/TheTimer
+```
+Kullanıcı bazlı kurulum adımları arşivdeki `INSTALL.txt` dosyasında.  
+
+### Kaynaktan paket üretme  
+#### Flatpak  
 ```bash
 bash packaging/flatpak/build-flatpak.sh
 flatpak run io.github.msozturktr.TheTimer
 ```
 
-### AppImage  
+#### AppImage  
 ```bash
 bash packaging/appimage/build-appimage.sh
 ```
+Tüm sürüm paketleri: `packaging/build-release.sh <ver>` (çıktı `artifacts/release/`).
 
-### Kaynak kodundan  
+#### Kaynak kodundan  
 ```bash
 dotnet run --project src/TheTimer.App
 ```
