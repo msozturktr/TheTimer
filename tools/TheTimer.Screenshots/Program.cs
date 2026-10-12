@@ -17,7 +17,7 @@ const string ZoneId = "Europe/Istanbul";
 Environment.SetEnvironmentVariable("TZ", ZoneId); // view models read TimeZoneInfo.Local
 TimeZoneInfo.ClearCachedData();
 
-var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "plan", "plan-editor", "today", "today-recovery", "timer-recovery", "report", "report-empty" };
+var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "plan", "plan-editor", "today", "today-recovery", "timer-recovery", "report", "report-empty", "today-empty", "today-running" };
 if (args.Length == 0)
 {
     Console.Error.WriteLine("Usage: TheTimer.Screenshots <outDir> [scenario...]");
@@ -74,7 +74,8 @@ static void Render(string scenario, string path, TimeZoneInfo zone, int width, i
     var sessions = new InMemorySessionRepository();
     var activeStore = new InMemoryActiveSessionStore();
     var plans = new InMemoryPlanRepository();
-    DemoData.Seed(sessions, plans, zone);
+    if (scenario != "today-empty")
+        DemoData.Seed(sessions, plans, zone);
     if (scenario is "report" or "report-empty")
         DemoData.SeedReportWeek(sessions, plans, zone);
 
@@ -111,7 +112,17 @@ static void Render(string scenario, string path, TimeZoneInfo zone, int width, i
             var recurring = vm.Plan!.Items.First(i => i.IsRecurring);
             recurring.EditCommand.Execute(null);
             break;
+        case "today-running":
+            vm.SelectedTabIndex = 2;
+            vm.TaskName = "Tez raporu — 3. bölüm";
+            vm.Tag = "yazım";
+            clock.Advance(TimeSpan.FromMinutes(-25));
+            vm.StartCommand.Execute(null);
+            clock.Advance(TimeSpan.FromMinutes(25));
+            Pump(1500);
+            break;
         case "today":
+        case "today-empty":
         case "today-recovery":
             vm.SelectedTabIndex = 2;
             break;

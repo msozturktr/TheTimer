@@ -1,0 +1,190 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TheTimer.App.ViewModels"
+             xmlns:c="using:TheTimer.App.Controls"
+             xmlns:ct="using:TheTimer.App.Controls.Today"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="780"
+             x:Class="TheTimer.App.Views.TodayView"
+             x:DataType="vm:MainWindowViewModel">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.panel-title">
+            <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="LetterSpacing" Value="2" />
+            <Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}" />
+        </Style>
+        <Style Selector="TextBlock.panel-note">
+            <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="LetterSpacing" Value="1.5" />
+            <Setter Property="Foreground" Value="{DynamicResource Brush.TextFaint}" />
+        </Style>
+        <Style Selector="TextBlock.tiny">
+            <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.srow">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style Selector="Border.srow:pointerover">
+            <Setter Property="Background" Value="#0AFFFFFF" />
+        </Style>
+        <Style Selector="Border.srow Button.del">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
+        <Style Selector="Border.srow:pointerover Button.del">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="IsHitTestVisible" Value="True" />
+        </Style>
+        <Style Selector="TextBlock.time.latest">
+            <Setter Property="Foreground" Value="{DynamicResource Brush.Amber}" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="18" Margin="32,26,32,28" MaxWidth="1120">
+
+            <!-- Header -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Bottom">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource Brush.Amber}"
+                                BoxShadow="{DynamicResource Shadow.AmberDot}" VerticalAlignment="Center" />
+                        <TextBlock Classes="overline" Text="BUGÜN · GÜNLÜK DÖKÜM" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <TextBlock Classes="h1" Text="{Binding DateMainText}" FontSize="40" />
+                        <TextBlock Classes="h1 secondary" Text="{Binding WeekdayText, StringFormat=', {0}'}" FontSize="40"
+                                   Opacity="0.7" />
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="2" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding TotalShortText}" FontFamily="{DynamicResource Font.Mono}" FontWeight="Light"
+                                   FontSize="58" Foreground="{DynamicResource Brush.Amber}" LineHeight="62">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#FFB547" BlurRadius="26" OffsetX="0" OffsetY="0" Opacity="0.55" />
+                            </TextBlock.Effect>
+                        </TextBlock>
+                        <TextBlock Classes="overline" Text="SAAT" VerticalAlignment="Bottom" Margin="0,0,0,12" />
+                    </StackPanel>
+                    <TextBlock Classes="tiny secondary" Text="{Binding TotalCaptionText}" HorizontalAlignment="Right" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Hero: 24-hour dome -->
+            <Border Grid.Row="1" Classes="panel" Padding="22,16,22,6">
+                <Grid RowDefinitions="Auto,*">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Classes="panel-title" Text="24 SAATLİK GÜNDÖNÜMÜ" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="18">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Border Width="18" Height="4" CornerRadius="2" Background="{DynamicResource Brush.ActualHorizontal}"
+                                        BoxShadow="{DynamicResource Shadow.ActualGlowSoft}" VerticalAlignment="Center" />
+                                <TextBlock Classes="tiny faint" Text="Gerçekleşen" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Line StartPoint="0,0" EndPoint="18,0" Stroke="{DynamicResource Brush.Cyan}" StrokeThickness="2"
+                                      StrokeDashArray="2,2" VerticalAlignment="Center" />
+                                <TextBlock Classes="tiny faint" Text="Planlanan" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                    <ct:SundialDome x:Name="Dome" Grid.Row="1" Height="300" Data="{Binding TodayArc.Data}" />
+                </Grid>
+            </Border>
+
+            <!-- Breakdown + chain -->
+            <Grid x:Name="Lists" Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="18" RowSpacing="18">
+                <!-- By task -->
+                <Border x:Name="ByTaskPanel" Grid.Column="0" Classes="panel" MinHeight="250" Padding="24,20">
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+                            <TextBlock Grid.Column="0" Classes="panel-title" Text="GÖREVLERE GÖRE" />
+                            <TextBlock Grid.Column="1" Classes="panel-note" IsVisible="{Binding HasSessions}"
+                                       Text="{Binding TaskTotals.Count, StringFormat='{}{0} KATEGORİ'}" />
+                        </Grid>
+                        <Border DockPanel.Dock="Top" Classes="hairline-top" Height="1" Margin="0,0,0,16" />
+                        <TextBlock Classes="serif-italic faint" Text="Bugün henüz kayıtlı oturum yok."
+                                   IsVisible="{Binding !HasSessions}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <ItemsControl ItemsSource="{Binding TaskTotals}" IsVisible="{Binding HasSessions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TaskTotalItemViewModel">
+                                    <StackPanel Spacing="9" Margin="0,0,0,18">
+                                        <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="10">
+                                            <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{Binding TagBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Classes="tiny" Text="{Binding TagText}" Foreground="{Binding TagBrush}"
+                                                       IsVisible="{Binding TagText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                            <TextBlock Grid.Column="2" Text="{Binding TaskName}" TextTrimming="CharacterEllipsis"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="3" Classes="tiny faint" Text="{Binding CountText}" />
+                                            <TextBlock Grid.Column="4" Classes="tiny amber" Text="{Binding ShortTotalText}" FontSize="14"
+                                                       MinWidth="40" TextAlignment="Right" />
+                                            <TextBlock Grid.Column="5" Classes="tiny faint" Text="{Binding PercentText}"
+                                                       MinWidth="34" TextAlignment="Right" />
+                                        </Grid>
+                                        <ct:ProportionBar Fraction="{Binding Fraction}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Border>
+
+                <!-- Sessions chain -->
+                <Border x:Name="ChainPanel" Grid.Column="1" Classes="panel" MinHeight="250" Padding="24,20">
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,14">
+                            <TextBlock Grid.Column="0" Classes="panel-title" Text="OTURUMLAR" />
+                            <TextBlock Grid.Column="1" Classes="panel-note" Text="KRONOLOJİK" IsVisible="{Binding HasSessions}" />
+                        </Grid>
+                        <Border DockPanel.Dock="Top" Classes="hairline-top" Height="1" Margin="0,0,0,8" />
+                        <TextBlock Classes="serif-italic faint" Text="Bugün henüz kayıtlı oturum yok."
+                                   IsVisible="{Binding !HasSessions}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <ItemsControl ItemsSource="{Binding TodaySessions}" IsVisible="{Binding HasSessions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SessionItemViewModel">
+                                    <Border Classes="srow">
+                                        <Grid ColumnDefinitions="26,Auto,*,Auto,30" MinHeight="46">
+                                            <Grid Grid.Column="0" RowDefinitions="*,*" HorizontalAlignment="Stretch">
+                                                <Border Grid.Row="0" Width="1" HorizontalAlignment="Center" IsVisible="{Binding !IsFirst}"
+                                                        Background="{DynamicResource Brush.HairlineStrong}" />
+                                                <Border Grid.Row="1" Width="1" HorizontalAlignment="Center" IsVisible="{Binding !IsLast}"
+                                                        Background="{DynamicResource Brush.HairlineStrong}" />
+                                                <Border Grid.RowSpan="2" Width="9" Height="9" CornerRadius="5" Background="{Binding NodeBrush}"
+                                                        BoxShadow="0 0 9 1 #80FF9650" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Grid>
+                                            <TextBlock Grid.Column="1" Classes="tiny secondary time" Classes.latest="{Binding IsLast}"
+                                                       Text="{Binding TimeRange}" FontSize="12" Margin="10,0,16,0" />
+                                            <DockPanel Grid.Column="2" VerticalAlignment="Center" LastChildFill="True">
+                                                <Border DockPanel.Dock="Right" CornerRadius="999" Padding="9,2" Margin="10,0,10,0"
+                                                        Background="{Binding TagBackground}" BorderBrush="{Binding TagBorder}" BorderThickness="1"
+                                                        IsVisible="{Binding TagText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Classes="tiny" FontSize="10.5" Text="{Binding TagText}" Foreground="{Binding TagBrush}" />
+                                                </Border>
+                                                <TextBlock Text="{Binding TaskName}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            </DockPanel>
+                                            <TextBlock Grid.Column="3" Classes="tiny amber" Text="{Binding ShortDurationText}" FontSize="14"
+                                                       Margin="8,0,6,0" />
+                                            <Button Grid.Column="4" Classes="round del" Width="26" Height="26" Padding="0"
+                                                    ToolTip.Tip="Sil" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                    Command="{Binding DeleteCommand}" CommandParameter="{Binding Id}">
+                                                <c:Icon Data="{StaticResource Icon.Delete}" Width="12" Height="12" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

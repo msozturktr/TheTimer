@@ -552,11 +552,16 @@ public partial class MainWindowViewModel : ViewModelBase
 
         DateText = _loadedDay.ToDateTime(TimeOnly.MinValue).ToString("d MMMM yyyy dddd", TrCulture);
         TodaySessions.Clear();
-        foreach (var session in sessions)
-            TodaySessions.Add(new SessionItemViewModel(session, tz, DeleteSessionCommand));
+        sessions = sessions.OrderBy(s => s.StartedAt).ToList(); // chronological, oldest first
+        for (var i = 0; i < sessions.Count; i++)
+            TodaySessions.Add(new SessionItemViewModel(sessions[i], tz, DeleteSessionCommand, i == 0, i == sessions.Count - 1));
         TaskTotals.Clear();
+        var dayTotal = SessionSummary.Total(sessions);
         foreach (var total in SessionSummary.ByTask(sessions))
-            TaskTotals.Add(new TaskTotalItemViewModel(total));
+        {
+            var tag = sessions.FirstOrDefault(s => string.Equals(s.TaskName, total.TaskName, StringComparison.OrdinalIgnoreCase))?.Tag;
+            TaskTotals.Add(new TaskTotalItemViewModel(total, tag, dayTotal));
+        }
         HasSessions = sessions.Count > 0;
         _savedTotal = SessionSummary.Total(sessions);
         UpdateTotal();
@@ -568,9 +573,15 @@ public partial class MainWindowViewModel : ViewModelBase
     private void UpdateTotal()
     {
         var total = _savedTotal;
+        var includesRunning = false;
         if (_timer.State != TimerState.Idle && !_runningBreak && _timer.StartedAt is { } startedAt
             && DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(startedAt, TimeZoneInfo.Local).DateTime) == _loadedDay)
+        {
             total += _timer.Elapsed;
+            includesRunning = true;
+        }
+
         TotalText = $"Toplam: {FormatDuration(total)}";
+        UpdateTodayHeader(total, includesRunning);
     }
 }
