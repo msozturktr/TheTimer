@@ -57,12 +57,6 @@
             <Setter Property="MinHeight" Value="34" />
             <Setter Property="Width" Value="116" />
         </Style>
-        <Style Selector="Button.round.primary#PrimaryButton /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="BoxShadow" Value="none" />
-        </Style>
-        <Style Selector="Button.round.primary#PrimaryButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="BoxShadow" Value="none" />
-        </Style>
         <Style Selector="Button.danger /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="{DynamicResource Brush.Rose}" />
@@ -156,10 +150,10 @@
                                            HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="270"
                                            TextTrimming="CharacterEllipsis" Foreground="{DynamicResource Brush.TextPrimary}" />
                                 <Border IsVisible="{Binding HasTagPill}" CornerRadius="999" Padding="12,4" HorizontalAlignment="Center"
-                                        BorderThickness="1" BorderBrush="#4D7DD3FC" Background="#0F7DD3FC">
+                                        BorderThickness="1" BorderBrush="{Binding TagPillStyle.Border}" Background="{Binding TagPillStyle.Fill}">
                                     <StackPanel Orientation="Horizontal" Spacing="7">
-                                        <Ellipse Width="5" Height="5" Fill="{DynamicResource Brush.Cyan}" VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding TagPillText}" Classes="mono cyan" FontSize="11" />
+                                        <Ellipse Width="5" Height="5" Fill="{Binding TagPillStyle.Text}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding TagPillText}" Classes="mono" Foreground="{Binding TagPillStyle.Text}" FontSize="11" />
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -181,15 +175,6 @@
                             </Button>
                         </Panel>
                         <Panel Width="76" Height="76">
-                        <Ellipse Width="170" Height="170" IsHitTestVisible="False" IsVisible="{Binding #PrimaryButton.IsEffectivelyEnabled}">
-                            <Ellipse.Fill>
-                                <RadialGradientBrush>
-                                    <GradientStop Color="#50FF9650" Offset="0.38" />
-                                    <GradientStop Color="#20FF9650" Offset="0.62" />
-                                    <GradientStop Color="#00FF9650" Offset="1" />
-                                </RadialGradientBrush>
-                            </Ellipse.Fill>
-                        </Ellipse>
                         <Button x:Name="PrimaryButton" Classes="round primary" Width="76" Height="76" Command="{Binding PrimaryCommand}"
                                 ToolTip.Tip="{Binding PrimaryTip}">
                             <Panel>
@@ -262,8 +247,13 @@
                                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                             <StackPanel Grid.Column="0" Spacing="1" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding TaskName}" FontSize="13" TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Text="{Binding TagText}" IsVisible="{Binding HasTag}" Classes="mono cyan"
-                                                           FontSize="10.5" Opacity="0.8" />
+                                                <Border IsVisible="{Binding HasTag}" HorizontalAlignment="Left" CornerRadius="999" Padding="7,1" BorderThickness="1"
+                                                        Background="{Binding TagStyle.Fill}" BorderBrush="{Binding TagStyle.Border}">
+                                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                                        <Ellipse Width="4" Height="4" Fill="{Binding TagStyle.Text}" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding TagText}" Classes="mono" Foreground="{Binding TagStyle.Text}" FontSize="10.5" />
+                                                    </StackPanel>
+                                                </Border>
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding DurationText}" Classes="mono secondary"
                                                        VerticalAlignment="Center" />

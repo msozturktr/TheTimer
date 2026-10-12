@@ -61,16 +61,50 @@ public partial class PlanView : UserControl
         CompactSummary.IsVisible = narrow;
     }
 
-    /// <summary>Scrolls so "now" (or the first block) sits comfortably inside the viewport.</summary>
+    /// <summary>
+    /// Initial scroll: the first block near the top (24px margin) when it and "now" both fit; otherwise
+    /// "now" centred (today) or the first block (other days). Never leaves a block cut at the top edge.
+    /// </summary>
     private void ScrollToFocus()
     {
         Dispatcher.UIThread.Post(() =>
         {
             if (_vm is null)
                 return;
-            var y = PlanTimeline.YFor(_vm.FocusMinutes, _vm.RangeStartHour);
-            var target = Math.Max(y - Scroller.Viewport.Height * 0.5, 0);
-            Scroller.Offset = new Vector(0, Math.Min(target, Math.Max(Scroller.Extent.Height - Scroller.Viewport.Height, 0)));
+            const double margin = 24;
+            var view = Scroller.Viewport.Height;
+            var max = Math.Max(Scroller.Extent.Height - view, 0);
+            var start = _vm.RangeStartHour;
+            var blocks = _vm.Items
+                .Select(i => (Top: PlanTimeline.YFor(i.StartMinutes, start), Bottom: PlanTimeline.YFor(i.EndMinutes, start)))
+                .OrderBy(b => b.Top)
+                .ToList();
+            var hasNow = _vm.NowMinutes >= 0;
+            var nowY = hasNow ? PlanTimeline.YFor(_vm.NowMinutes, start) : 0;
+
+            double target;
+            if (blocks.Count == 0)
+                target = hasNow ? nowY - view * 0.5 : 0;
+            else
+            {
+                var firstTop = Math.Max(blocks[0].Top - margin, 0);
+                if (!hasNow || nowY <= firstTop + view - margin)
+                    target = firstTop;
+                else
+                {
+                    target = nowY - view * 0.5;
+                    // Don't slice a block at the top edge: snap up to its top if "now" stays visible, else past its end.
+                    foreach (var b in blocks)
+                    {
+                        if (b.Top < target && b.Bottom > target)
+                        {
+                            target = nowY <= b.Top - 8 + view - margin ? b.Top - 8 : b.Bottom + 8;
+                            break;
+                        }
+                    }
+                }
+            }
+            Scroller.Offset = new Vector(0, Math.Clamp(target, 0, max));
         }, DispatcherPriority.Loaded);
     }
 

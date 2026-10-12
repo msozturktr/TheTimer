@@ -23,6 +23,7 @@ public sealed partial class PlanOccurrenceItemViewModel : ObservableObject, ITim
         TaskName = block.TaskName;
         Tag = block.Tag;
         TagDisplay = PlanItemFormat.TagDisplay(block.Tag);
+        TagStyle = TagPalette.Style(block.Tag);
         IsRecurring = block.Recurrence is not null;
         RecurrenceTip = block.Recurrence is { } rec ? PlanFormat.DescribeRecurrence(rec) : string.Empty;
         RecurrenceChip = block.Recurrence is { } r ? PlanFormat.DescribeRecurrence(r with { EndDate = null }) : string.Empty;
@@ -84,6 +85,8 @@ public sealed partial class PlanOccurrenceItemViewModel : ObservableObject, ITim
 
     public string TagDisplay { get; }
 
+    public TagStyle TagStyle { get; }
+
     public bool HasTag => Tag is not null;
 
     public bool IsRecurring { get; }
@@ -135,6 +138,7 @@ public sealed class TaskComparisonItemViewModel
     {
         TaskName = comparison.TaskName;
         TagDisplay = PlanItemFormat.TagDisplay(tag);
+        TagStyle = TagPalette.Style(tag);
         HasTag = !string.IsNullOrEmpty(tag);
         PlannedText = PlanFormat.FormatHm(comparison.Planned);
         ActualText = PlanFormat.FormatHm(comparison.Actual);
@@ -147,6 +151,8 @@ public sealed class TaskComparisonItemViewModel
     public string TaskName { get; }
 
     public string TagDisplay { get; }
+
+    public TagStyle TagStyle { get; }
 
     public bool HasTag { get; }
 
@@ -188,6 +194,8 @@ public sealed class TagChipViewModel(string tag)
     public string Tag { get; } = tag;
 
     public string Display { get; } = PlanItemFormat.TagDisplay(tag);
+
+    public TagStyle Style { get; } = TagPalette.Style(tag);
 }
 
 internal static class PlanItemFormat

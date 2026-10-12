@@ -19,7 +19,7 @@ public sealed class ReportTaskItemViewModel
         Color.Parse("#FFB547"), Color.Parse("#FF6B81"), Color.Parse("#FF7A59"),
     ];
 
-    public ReportTaskItemViewModel(TaskPlanComparison task, double scaleHours)
+    public ReportTaskItemViewModel(TaskPlanComparison task, double scaleHours, string? tag = null)
     {
         TaskName = task.TaskName;
         PlannedText = ReportFormat.Hm(task.Planned);
@@ -28,7 +28,7 @@ public sealed class ReportTaskItemViewModel
         IsPositive = DifferenceText.StartsWith('+');
         IsNegative = DifferenceText.StartsWith('−');
         IsNeutral = !IsPositive && !IsNegative;
-        DotColor = Palette[StableHash(task.TaskName.ToLowerInvariant()) % Palette.Length];
+        DotColor = string.IsNullOrWhiteSpace(tag) ? Palette[StableHash(task.TaskName.ToLowerInvariant()) % Palette.Length] : TagPalette.For(tag);
         PlannedFraction = scaleHours > 0 ? task.Planned.TotalHours / scaleHours : 0;
         ActualFraction = scaleHours > 0 ? task.Actual.TotalHours / scaleHours : 0;
 
@@ -175,12 +175,16 @@ public partial class ReportViewModel : ViewModelBase
         WeeklyReportData data;
         var sessionCount = 0;
         var blockCount = 0;
+        IReadOnlyList<TimeSession> weekSessions = [];
         try
         {
             data = _service.GetWeek(_weekStart, zone);
             var end = data.WeekStart.AddDays(6);
             if (_sessions is not null)
-                sessionCount = _sessions.GetByRange(data.WeekStart, end, zone).Count;
+            {
+                weekSessions = _sessions.GetByRange(data.WeekStart, end, zone);
+                sessionCount = weekSessions.Count;
+            }
             if (_plan is not null)
                 blockCount = _plan.GetOccurrences(data.WeekStart, end, zone).Count;
         }
@@ -236,12 +240,21 @@ public partial class ReportViewModel : ViewModelBase
             : Math.Max(0.1, data.Tasks.Max(t => Math.Max(t.Planned.TotalHours, t.Actual.TotalHours)));
         Tasks.Clear();
         foreach (var task in data.Tasks)
-            Tasks.Add(new ReportTaskItemViewModel(task, scale));
+            Tasks.Add(new ReportTaskItemViewModel(task, scale, TagOfLatestSession(weekSessions, task.TaskName)));
         HasTasks = data.Tasks.Count > 0;
         TasksFooterText = $"Toplam {data.Tasks.Count} görev · {sessionCount} oturum";
 
         HasData = data.TotalActual > TimeSpan.Zero || data.TotalPlanned > TimeSpan.Zero || data.Tasks.Count > 0;
     }
+
+    /// <summary>Tag of the task's most recent session in the week (case-insensitive name match), if any.</summary>
+    private static string? TagOfLatestSession(IEnumerable<TimeSession> sessions, string taskName) =>
+        sessions
+            .Where(s => !string.IsNullOrWhiteSpace(s.Tag)
+                        && string.Equals(s.TaskName.Trim(), taskName.Trim(), StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(s => s.StartedAt)
+            .Select(s => s.Tag)
+            .FirstOrDefault();
 
     [RelayCommand]
     private void PreviousWeek()

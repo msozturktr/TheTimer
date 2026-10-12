@@ -91,6 +91,8 @@
 
             <!-- Glows (depth is light, not dark shadow) -->
             <BoxShadows x:Key="Shadow.ActualGlow">0 0 24 0 #59FF9650</BoxShadows>
+            <BoxShadows x:Key="Shadow.RoundGlow">0 0 44 8 #66FF9650</BoxShadows>
+            <BoxShadows x:Key="Shadow.RoundGlowStrong">0 0 52 12 #8CFF9650</BoxShadows>
             <BoxShadows x:Key="Shadow.ActualGlowStrong">0 0 34 2 #8CFF9650</BoxShadows>
             <BoxShadows x:Key="Shadow.ActualGlowSoft">0 0 10 0 #4DFFB547</BoxShadows>
             <BoxShadows x:Key="Shadow.PlannedGlow">0 0 18 0 #337DD3FC</BoxShadows>
@@ -420,19 +422,21 @@
     </Style>
     <Style Selector="Button.round.primary">
         <Setter Property="Width" Value="64" />
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Height" Value="64" />
         <Setter Property="Padding" Value="0" />
     </Style>
     <Style Selector="Button.round.primary /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Background" Value="{DynamicResource Brush.Actual}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="{DynamicResource Brush.OnAmber}" />
-        <Setter Property="BoxShadow" Value="{DynamicResource Shadow.ActualGlow}" />
+        <Setter Property="BoxShadow" Value="{DynamicResource Shadow.RoundGlow}" />
     </Style>
     <Style Selector="Button.round.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource Brush.ActualHover}" />
         <Setter Property="Foreground" Value="{DynamicResource Brush.OnAmber}" />
-        <Setter Property="BoxShadow" Value="{DynamicResource Shadow.ActualGlowStrong}" />
+        <Setter Property="BoxShadow" Value="{DynamicResource Shadow.RoundGlowStrong}" />
     </Style>
     <Style Selector="Button.round.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource Brush.Raised}" />

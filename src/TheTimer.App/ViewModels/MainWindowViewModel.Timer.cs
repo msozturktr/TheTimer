@@ -12,6 +12,8 @@ namespace TheTimer.App.ViewModels;
 public sealed record RecentSessionItem(string TaskName, string? TagText, string DurationText)
 {
     public bool HasTag => TagText is not null;
+
+    public TagStyle TagStyle { get; } = TagPalette.Style(TagText);
 }
 
 // Timer tab (dial, side panel) presentation state; the timing logic itself lives in MainWindowViewModel.cs.
@@ -67,6 +69,9 @@ public partial class MainWindowViewModel
 
     [ObservableProperty]
     public partial bool HasTagPill { get; set; }
+
+    [ObservableProperty]
+    public partial TagStyle TagPillStyle { get; set; } = TagPalette.Style(null);
 
     [ObservableProperty]
     public partial string CaptionText { get; set; } = string.Empty;
@@ -275,6 +280,7 @@ public partial class MainWindowViewModel
         DisplayTaskName = IsBreakPhase ? "Mola" : TaskName;
         TagPillText = IsBreakPhase || string.IsNullOrWhiteSpace(Tag) ? string.Empty : "#" + Tag.Trim().TrimStart('#');
         HasTagPill = TagPillText.Length > 0;
+        TagPillStyle = TagPalette.Style(TagPillText);
 
         PrimaryTip = state switch
         {
