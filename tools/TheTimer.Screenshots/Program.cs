@@ -17,7 +17,7 @@ const string ZoneId = "Europe/Istanbul";
 Environment.SetEnvironmentVariable("TZ", ZoneId); // view models read TimeZoneInfo.Local
 TimeZoneInfo.ClearCachedData();
 
-var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "plan", "plan-editor", "today", "today-recovery", "timer-recovery", "report" };
+var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "plan", "plan-editor", "today", "today-recovery", "timer-recovery", "report", "today-empty", "today-running" };
 if (args.Length == 0)
 {
     Console.Error.WriteLine("Usage: TheTimer.Screenshots <outDir> [scenario...]");
@@ -25,8 +25,23 @@ if (args.Length == 0)
     return 2;
 }
 
+// Optional `--size WxH` (default 1200x780) may appear anywhere after <outDir>.
+var windowSize = (Width: 1200, Height: 780);
+var rest = new List<string>();
+for (var i = 1; i < args.Length; i++)
+{
+    if (args[i] == "--size" && i + 1 < args.Length && args[i + 1].Split('x') is [var sw, var sh]
+        && int.TryParse(sw, out var parsedW) && int.TryParse(sh, out var parsedH))
+    {
+        windowSize = (parsedW, parsedH);
+        i++;
+    }
+    else
+        rest.Add(args[i]);
+}
+
 var outDir = Path.GetFullPath(args[0]);
-var scenarios = args.Length > 1 ? args[1..] : allScenarios;
+var scenarios = rest.Count > 0 ? rest.ToArray() : allScenarios;
 foreach (var name in scenarios)
 {
     if (!allScenarios.Contains(name))
@@ -46,20 +61,21 @@ var zone = TimeZoneInfo.FindSystemTimeZoneById(ZoneId);
 foreach (var name in scenarios)
 {
     var path = Path.Combine(outDir, name + ".png");
-    Render(name, path, zone);
+    Render(name, path, zone, windowSize.Width, windowSize.Height);
     Console.WriteLine(path);
 }
 
 return 0;
 
-static void Render(string scenario, string path, TimeZoneInfo zone)
+static void Render(string scenario, string path, TimeZoneInfo zone, int width, int height)
 {
     var start = new DateTimeOffset(DemoData.Today.ToDateTime(DemoData.Now), zone.GetUtcOffset(DemoData.Today.ToDateTime(DemoData.Now)));
     var clock = new FakeTimeProvider(start, zone);
     var sessions = new InMemorySessionRepository();
     var activeStore = new InMemoryActiveSessionStore();
     var plans = new InMemoryPlanRepository();
-    DemoData.Seed(sessions, plans, zone);
+    if (scenario != "today-empty")
+        DemoData.Seed(sessions, plans, zone);
 
     if (scenario is "today-recovery" or "timer-recovery")
     {
@@ -70,7 +86,7 @@ static void Render(string scenario, string path, TimeZoneInfo zone)
     }
 
     var vm = AppComposition.Create(sessions, activeStore, plans, clock, new NoOpNotifier());
-    var window = new MainWindow { DataContext = vm, Width = 1200, Height = 780 };
+    var window = new MainWindow { DataContext = vm, Width = width, Height = height };
     window.Show();
     Pump();
 
@@ -94,7 +110,17 @@ static void Render(string scenario, string path, TimeZoneInfo zone)
             var recurring = vm.Plan!.Items.First(i => i.IsRecurring);
             recurring.EditCommand.Execute(null);
             break;
+        case "today-running":
+            vm.SelectedTabIndex = 2;
+            vm.TaskName = "Tez raporu — 3. bölüm";
+            vm.Tag = "yazım";
+            clock.Advance(TimeSpan.FromMinutes(-25));
+            vm.StartCommand.Execute(null);
+            clock.Advance(TimeSpan.FromMinutes(25));
+            Pump(1500);
+            break;
         case "today":
+        case "today-empty":
         case "today-recovery":
             vm.SelectedTabIndex = 2;
             break;

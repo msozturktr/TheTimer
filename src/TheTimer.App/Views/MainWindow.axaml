@@ -87,48 +87,7 @@
                     <TextBlock Classes="nav-label" Text="BUGÜN" />
                 </StackPanel>
             </TabItem.Header>
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="24,16" RowSpacing="8" MaxWidth="880">
-                    <TextBlock Grid.Row="0" Text="{Binding DateText}" Classes="h2" />
-                    <TextBlock Grid.Row="1" Text="{Binding TotalText}" FontFamily="monospace" FontSize="16" />
-                    <TextBlock Grid.Row="2" Text="Bugün henüz kayıtlı oturum yok." Opacity="0.6"
-                               IsVisible="{Binding !HasSessions}" />
-                    <StackPanel Grid.Row="3" Spacing="4" IsVisible="{Binding HasSessions}">
-                        <TextBlock Text="Görevlere göre" FontWeight="SemiBold" FontSize="16" />
-                        <ItemsControl ItemsSource="{Binding TaskTotals}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:TaskTotalItemViewModel">
-                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12" Margin="0,2">
-                                        <TextBlock Grid.Column="0" Text="{Binding TaskName}" TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Grid.Column="1" Text="{Binding CountText}" Opacity="0.6" />
-                                        <TextBlock Grid.Column="2" Text="{Binding TotalText}" FontFamily="monospace" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                    <Grid Grid.Row="4" RowDefinitions="Auto,*" RowSpacing="8" IsVisible="{Binding HasSessions}">
-                        <TextBlock Grid.Row="0" Text="Oturumlar" FontWeight="SemiBold" FontSize="16" />
-                        <ScrollViewer Grid.Row="1">
-                            <ItemsControl ItemsSource="{Binding TodaySessions}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:SessionItemViewModel">
-                                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto" Margin="0,4">
-                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding TaskName}" TextTrimming="CharacterEllipsis" />
-                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DurationText}" FontFamily="monospace" />
-                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Tag}" IsVisible="{Binding HasTag}" Opacity="0.6" FontSize="12" />
-                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TimeRange}" Opacity="0.6" FontSize="12" />
-                                            <Button Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Classes="round" Width="30" Height="30"
-                                                    ToolTip.Tip="Sil" VerticalAlignment="Center"
-                                                    Command="{Binding DeleteCommand}" CommandParameter="{Binding Id}">
-                                                <c:Icon Data="{StaticResource Icon.Delete}" Width="14" Height="14" />
-                                            </Button>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Grid>
-                </Grid>
+                <views:TodayView />
             </TabItem>
             <TabItem>
             <TabItem.Header>

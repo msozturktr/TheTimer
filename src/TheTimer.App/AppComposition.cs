@@ -18,14 +18,18 @@ public static class AppComposition
     {
         var planService = new PlanService(planRepository);
         var reportViewModel = new ReportViewModel(new ReportService(repository, planService), timeProvider);
-        var viewModel = new MainWindowViewModel(new SessionTimer(timeProvider), repository, activeStore, timeProvider, notifier)
+        var timer = new SessionTimer(timeProvider);
+        MainWindowViewModel? viewModel = null;
+        viewModel = new MainWindowViewModel(timer, repository, activeStore, timeProvider, notifier)
         {
             Report = reportViewModel,
+            TodayArc = new TodayArcViewModel(repository, planService, timer, timeProvider, () => viewModel?.IsRunningBreak ?? false),
         };
         var plan = new PlanViewModel(planService, repository, timeProvider, notifier, viewModel.StartFromPlan);
         viewModel.Plan = plan;
         viewModel.SessionsChanged += (_, _) => plan.Refresh();
         viewModel.SessionsChanged += (_, _) => reportViewModel.Refresh();
+        viewModel.SessionsChanged += (_, _) => viewModel.TodayArc!.Refresh();
         return viewModel;
     }
 }
