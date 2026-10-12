@@ -1,0 +1,108 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TheTimer.App.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="620"
+             x:Class="TheTimer.App.Views.ReportView"
+             x:DataType="vm:ReportViewModel">
+    <UserControl.Styles>
+        <Style Selector="Border.day.today">
+            <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+        </Style>
+        <Style Selector="TextBlock.diff.positive">
+            <Setter Property="Foreground" Value="#2E9E5B" />
+        </Style>
+        <Style Selector="TextBlock.diff.negative">
+            <Setter Property="Foreground" Value="#D9534F" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="12">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                <Button Grid.Column="0" Content="◀" Command="{Binding PreviousWeekCommand}" ToolTip.Tip="Önceki hafta" />
+                <StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding WeekText}" FontWeight="SemiBold" FontSize="18" HorizontalAlignment="Center" />
+                    <Button Content="Bu hafta" Command="{Binding ThisWeekCommand}" IsEnabled="{Binding !IsCurrentWeek}"
+                            HorizontalAlignment="Center" Padding="8,2" />
+                </StackPanel>
+                <Button Grid.Column="2" Content="▶" Command="{Binding NextWeekCommand}" ToolTip.Tip="Sonraki hafta" />
+            </Grid>
+
+            <TextBlock Text="{Binding TotalsText}" HorizontalAlignment="Center" TextWrapping="Wrap" />
+
+            <TextBlock Text="Bu hafta için kayıt yok." Opacity="0.6" HorizontalAlignment="Center"
+                       IsVisible="{Binding !HasData}" />
+
+            <StackPanel Spacing="12" IsVisible="{Binding HasData}">
+                <ItemsControl ItemsSource="{Binding Days}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ReportDayItemViewModel">
+                            <Border Classes="day" Classes.today="{Binding IsToday}" CornerRadius="6" Padding="2,6" Margin="1,0"
+                                    Background="Transparent" ToolTip.Tip="{Binding ToolTipText}">
+                                <StackPanel Spacing="2">
+                                    <Grid Height="120">
+                                        <Border Width="28" Height="{Binding PlannedHeight}" VerticalAlignment="Bottom"
+                                                HorizontalAlignment="Center" CornerRadius="3" BorderThickness="1.5"
+                                                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                        <Border Width="18" Height="{Binding ActualHeight}" VerticalAlignment="Bottom"
+                                                HorizontalAlignment="Center" CornerRadius="3"
+                                                Background="{DynamicResource SystemControlHighlightAccentBrush}" />
+                                    </Grid>
+                                    <TextBlock Text="{Binding ValueText}" FontFamily="monospace" FontSize="11"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding WeekdayText}" FontSize="12" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding DayNumberText}" FontSize="11" Opacity="0.6"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Width="12" Height="12" CornerRadius="2"
+                                Background="{DynamicResource SystemControlHighlightAccentBrush}" />
+                        <TextBlock Text="Gerçekleşen" FontSize="12" Opacity="0.7" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Width="12" Height="12" CornerRadius="2" BorderThickness="1.5"
+                                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                        <TextBlock Text="Planlanan" FontSize="12" Opacity="0.7" />
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock Text="Görevlere göre" FontWeight="SemiBold" FontSize="16" />
+                <Grid ColumnDefinitions="*,52,52,56" ColumnSpacing="8">
+                    <TextBlock Grid.Column="0" Text="Görev" Opacity="0.6" FontSize="12" />
+                    <TextBlock Grid.Column="1" Text="Plan" Opacity="0.6" FontSize="12" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="2" Text="Gerçek" Opacity="0.6" FontSize="12" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="3" Text="Fark" Opacity="0.6" FontSize="12" HorizontalAlignment="Right" />
+                </Grid>
+                <ItemsControl ItemsSource="{Binding Tasks}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ReportTaskItemViewModel">
+                            <Grid ColumnDefinitions="*,52,52,56" ColumnSpacing="8" Margin="0,2">
+                                <TextBlock Grid.Column="0" Text="{Binding TaskName}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding PlannedText}" FontFamily="monospace"
+                                           HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="2" Text="{Binding ActualText}" FontFamily="monospace"
+                                           HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="3" Text="{Binding DifferenceText}" FontFamily="monospace"
+                                           HorizontalAlignment="Right" Classes="diff"
+                                           Classes.positive="{Binding IsPositive}" Classes.negative="{Binding IsNegative}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

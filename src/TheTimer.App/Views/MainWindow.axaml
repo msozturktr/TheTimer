@@ -106,5 +106,8 @@
                     </Grid>
                 </Grid>
             </TabItem>
+            <TabItem Header="Rapor">
+                <views:ReportView DataContext="{Binding Report}" />
+            </TabItem>
         </TabControl>
 </Window>

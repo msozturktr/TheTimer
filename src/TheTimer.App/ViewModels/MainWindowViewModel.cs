@@ -146,6 +146,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial int SelectedTabIndex { get; set; }
 
+    public ReportViewModel? Report { get; init; }
+
     /// <summary>Starts a stopwatch session for a planned block and switches to the timer tab.</summary>
     public bool StartFromPlan(string taskName, string? tag)
     {
