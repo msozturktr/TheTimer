@@ -169,8 +169,10 @@
                 </Viewbox>
 
                 <StackPanel Grid.Row="1" Margin="0,30,0,0" Spacing="12" HorizontalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Spacing="26" HorizontalAlignment="Center">
-                        <Panel Width="48" Height="48" VerticalAlignment="Center">
+                    <!-- Primary button stays centred: equal side columns around it. -->
+                    <Grid ColumnDefinitions="*,Auto,*" Width="380">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="20" HorizontalAlignment="Right" Margin="0,0,26,0">
+                        <Panel Width="48" Height="48" VerticalAlignment="Center" IsVisible="{Binding IsCountdownMode}">
                             <Button Classes="round" Width="48" Height="48" ToolTip.Tip="Bitiş sesi">
                                 <Panel>
                                     <c:Icon Data="M12 3a5 5 0 0 0-5 5v4l-2 3h14l-2-3V8a5 5 0 0 0-5-5zM10 18a2 2 0 0 0 4 0" Width="20" Height="20"
@@ -203,7 +205,8 @@
                                 <c:Icon Data="{StaticResource Icon.Stop}" Width="20" Height="20" />
                             </Button>
                         </Panel>
-                        <Panel Width="76" Height="76">
+                        </StackPanel>
+                        <Panel Grid.Column="1" Width="76" Height="76">
                         <Button x:Name="PrimaryButton" Classes="round primary" Width="76" Height="76" Command="{Binding PrimaryCommand}"
                                 ToolTip.Tip="{Binding PrimaryTip}">
                             <Panel>
@@ -214,13 +217,13 @@
                             </Panel>
                         </Button>
                         </Panel>
-                        <Panel Width="48" Height="48" VerticalAlignment="Center">
+                        <Panel Grid.Column="2" Width="48" Height="48" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="26,0,0,0">
                             <Button Classes="round" Width="48" Height="48" Command="{Binding ResetPomodoroCommand}"
                                     IsVisible="{Binding ShowReset}" ToolTip.Tip="Sıfırla">
                                 <c:Icon Data="{StaticResource Icon.Reset}" Width="20" Height="20" />
                             </Button>
                         </Panel>
-                    </StackPanel>
+                    </Grid>
                     <TextBlock Text="{Binding CaptionText}" Classes="overline" HorizontalAlignment="Center"
                                FontSize="10.5" LetterSpacing="2" />
                 </StackPanel>
