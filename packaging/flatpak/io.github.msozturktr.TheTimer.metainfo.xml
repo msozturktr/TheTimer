@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.msozturktr.TheTimer</id>
+  <name>TheTimer</name>
+  <summary>Süre tutma, süre takibi ve gün planlama</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="io.github.msozturktr"><name>msozturktr</name></developer>
+  <description>
+    <p>Kronometre, geri sayım ve Pomodoro ile süre tutar; oturumları kaydeder, günü tekrarlayan bloklarla planlar ve planlanan ile gerçekleşeni haftalık raporla karşılaştırır.</p>
+  </description>
+  <launchable type="desktop-id">io.github.msozturktr.TheTimer.desktop</launchable>
+  <url type="homepage">https://github.com/msozturktr/TheTimer</url>
+  <content_rating type="oars-1.1"/>
+  <releases><release version="0.3.0" date="2026-10-12"/></releases>
+</component>

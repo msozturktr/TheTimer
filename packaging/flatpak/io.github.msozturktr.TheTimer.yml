@@ -1,0 +1,34 @@
+# Local Flatpak build from a prebuilt self-contained .NET publish (see build-flatpak.sh).
+app-id: io.github.msozturktr.TheTimer
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+command: TheTimer
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.kde.StatusNotifierWatcher
+modules:
+  - name: thetimer
+    buildsystem: simple
+    sources:
+      - type: dir
+        path: ../../artifacts/flatpak-publish
+        dest: publish
+      - type: file
+        path: ../linux/thetimer.desktop
+      - type: file
+        path: ../linux/thetimer.png
+      - type: file
+        path: io.github.msozturktr.TheTimer.metainfo.xml
+    build-commands:
+      - install -d /app/lib/thetimer /app/bin
+      - cp -a publish/. /app/lib/thetimer/
+      - ln -s /app/lib/thetimer/TheTimer /app/bin/TheTimer
+      - sed -e 's/^Icon=.*/Icon=io.github.msozturktr.TheTimer/' thetimer.desktop > io.github.msozturktr.TheTimer.desktop
+      - install -Dm644 io.github.msozturktr.TheTimer.desktop -t /app/share/applications
+      - install -Dm644 thetimer.png /app/share/icons/hicolor/256x256/apps/io.github.msozturktr.TheTimer.png
+      - install -Dm644 io.github.msozturktr.TheTimer.metainfo.xml -t /app/share/metainfo
