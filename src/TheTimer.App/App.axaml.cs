@@ -28,10 +28,11 @@ public partial class App : Application
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             var notifier = new FreedesktopNotifier();
-            var (repository, databaseError) = CreateRepository();
+            var (repository, activeStore, databaseError) = CreateRepository();
             var viewModel = new MainWindowViewModel(
                 new SessionTimer(TimeProvider.System),
                 repository,
+                activeStore,
                 TimeProvider.System,
                 notifier);
             if (databaseError)
@@ -42,22 +43,27 @@ public partial class App : Application
             // Idle close ends the app; the window cancels the close itself while a session is active.
             window.Closed += (_, _) => desktop.Shutdown();
 
+            // Logout/session end: keep the heartbeat fresh so recovery counts time up to the last moment.
+            desktop.ShutdownRequested += (_, _) => viewModel.TouchActiveSession();
+            desktop.Exit += (_, _) => viewModel.TouchActiveSession();
+
             SetupTrayIcon(desktop, window, viewModel);
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static (ISessionRepository Repository, bool Failed) CreateRepository()
+    private static (ISessionRepository Repository, IActiveSessionStore ActiveStore, bool Failed) CreateRepository()
     {
         try
         {
-            return (new SqliteSessionRepository(AppPaths.FromEnvironment().DatabasePath), false);
+            var sqlite = new SqliteSessionRepository(AppPaths.FromEnvironment().DatabasePath);
+            return (sqlite, sqlite, false);
         }
         catch (Exception ex)
         {
             Trace.WriteLine($"Failed to open session database: {ex}");
-            return (new InMemorySessionRepository(), true);
+            return (new InMemorySessionRepository(), new InMemoryActiveSessionStore(), true);
         }
     }
 

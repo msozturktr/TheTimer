@@ -111,6 +111,35 @@ public sealed class SessionTimer
         return session;
     }
 
+    /// <summary>Captures the current state for persistence; null when idle.</summary>
+    public TimerSnapshot? CreateSnapshot() => State == TimerState.Idle
+        ? null
+        : new TimerSnapshot(TaskName!, Tag, StartedAt!.Value, _accumulated,
+            State == TimerState.Running ? _segmentStart : null, Target);
+
+    /// <summary>Restores a previously captured state. Only allowed while idle.</summary>
+    public void Restore(TimerSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        if (State != TimerState.Idle)
+            throw new InvalidOperationException("Timer is already started.");
+        if (string.IsNullOrWhiteSpace(snapshot.TaskName))
+            throw new ArgumentException("Task name must not be empty.", nameof(snapshot));
+        if (snapshot.Accumulated < TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(snapshot), "Accumulated time must not be negative.");
+        if (snapshot.Target is { } t && t <= TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(snapshot), "Target must be greater than zero.");
+
+        TaskName = snapshot.TaskName.Trim();
+        Tag = string.IsNullOrWhiteSpace(snapshot.Tag) ? null : snapshot.Tag.Trim();
+        StartedAt = snapshot.StartedAt;
+        Target = snapshot.Target;
+        _accumulated = snapshot.Accumulated;
+        _segmentStart = snapshot.SegmentStart ?? default;
+        State = snapshot.SegmentStart is null ? TimerState.Paused : TimerState.Running;
+        OnStateChanged();
+    }
+
     private void Reset()
     {
         TaskName = null;

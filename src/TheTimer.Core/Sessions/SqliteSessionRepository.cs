@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using TheTimer.Core.Pomodoro;
 
 namespace TheTimer.Core.Sessions;
 
@@ -6,10 +7,10 @@ namespace TheTimer.Core.Sessions;
 /// SQLite-backed session store. Instants are stored as UTC ticks and read back with a zero offset;
 /// <see cref="DateTimeOffset"/> equality compares instants, so round-tripped sessions are equal.
 /// </summary>
-public sealed class SqliteSessionRepository : ISessionRepository
+public sealed class SqliteSessionRepository : ISessionRepository, IActiveSessionStore
 {
     /// <summary>Schema version this build understands. Add a step to <see cref="Migrate"/> when bumping it.</summary>
-    private const int CurrentSchemaVersion = 1;
+    private const int CurrentSchemaVersion = 2;
 
     private readonly string _connectionString;
 
@@ -94,6 +95,81 @@ public sealed class SqliteSessionRepository : ISessionRepository
         return command.ExecuteNonQuery() > 0;
     }
 
+    public void Save(ActiveSessionRecord record)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+
+        var timer = record.Timer;
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "INSERT INTO active_session (id, task_name, tag, started_at_utc_ticks, accumulated_ticks, " +
+            "segment_start_utc_ticks, target_ticks, last_seen_utc_ticks, mode, is_break, pomodoro_phase, pomodoro_completed) " +
+            "VALUES (1, $task, $tag, $started, $accumulated, $segment, $target, $lastSeen, $mode, $isBreak, $phase, $completed) " +
+            "ON CONFLICT(id) DO UPDATE SET task_name = excluded.task_name, tag = excluded.tag, " +
+            "started_at_utc_ticks = excluded.started_at_utc_ticks, accumulated_ticks = excluded.accumulated_ticks, " +
+            "segment_start_utc_ticks = excluded.segment_start_utc_ticks, target_ticks = excluded.target_ticks, " +
+            "last_seen_utc_ticks = excluded.last_seen_utc_ticks, mode = excluded.mode, is_break = excluded.is_break, " +
+            "pomodoro_phase = excluded.pomodoro_phase, pomodoro_completed = excluded.pomodoro_completed";
+        command.Parameters.AddWithValue("$task", timer.TaskName);
+        command.Parameters.AddWithValue("$tag", (object?)timer.Tag ?? DBNull.Value);
+        command.Parameters.AddWithValue("$started", timer.StartedAt.UtcTicks);
+        command.Parameters.AddWithValue("$accumulated", timer.Accumulated.Ticks);
+        command.Parameters.AddWithValue("$segment", timer.SegmentStart is { } s ? s.UtcTicks : DBNull.Value);
+        command.Parameters.AddWithValue("$target", timer.Target is { } t ? t.Ticks : DBNull.Value);
+        command.Parameters.AddWithValue("$lastSeen", record.LastSeen.UtcTicks);
+        command.Parameters.AddWithValue("$mode", record.Mode);
+        command.Parameters.AddWithValue("$isBreak", record.IsBreak ? 1 : 0);
+        command.Parameters.AddWithValue("$phase", (int)record.PomodoroPhase);
+        command.Parameters.AddWithValue("$completed", record.PomodoroCompletedWorkCount);
+        command.ExecuteNonQuery();
+    }
+
+    public ActiveSessionRecord? Load()
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT task_name, tag, started_at_utc_ticks, accumulated_ticks, segment_start_utc_ticks, target_ticks, " +
+            "last_seen_utc_ticks, mode, is_break, pomodoro_phase, pomodoro_completed FROM active_session WHERE id = 1";
+
+        using var reader = command.ExecuteReader();
+        if (!reader.Read())
+            return null;
+
+        var timer = new TimerSnapshot(
+            reader.GetString(0),
+            reader.IsDBNull(1) ? null : reader.GetString(1),
+            new DateTimeOffset(reader.GetInt64(2), TimeSpan.Zero),
+            TimeSpan.FromTicks(reader.GetInt64(3)),
+            reader.IsDBNull(4) ? null : new DateTimeOffset(reader.GetInt64(4), TimeSpan.Zero),
+            reader.IsDBNull(5) ? null : TimeSpan.FromTicks(reader.GetInt64(5)));
+        return new ActiveSessionRecord(
+            timer,
+            new DateTimeOffset(reader.GetInt64(6), TimeSpan.Zero),
+            reader.GetString(7),
+            reader.GetInt64(8) != 0,
+            (PomodoroPhase)reader.GetInt32(9),
+            reader.GetInt32(10));
+    }
+
+    public void Clear()
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "DELETE FROM active_session";
+        command.ExecuteNonQuery();
+    }
+
+    public void Touch(DateTimeOffset lastSeen)
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "UPDATE active_session SET last_seen_utc_ticks = $lastSeen WHERE id = 1";
+        command.Parameters.AddWithValue("$lastSeen", lastSeen.UtcTicks);
+        command.ExecuteNonQuery();
+    }
+
     private static long ToUtcTicksClamped(DateTime unspecifiedLocal, TimeZoneInfo timeZone)
     {
         var unspecified = DateTime.SpecifyKind(unspecifiedLocal, DateTimeKind.Unspecified);
@@ -150,7 +226,23 @@ public sealed class SqliteSessionRepository : ISessionRepository
                     Execute(connection, transaction,
                         "CREATE INDEX ix_sessions_started_at ON sessions (started_at_utc_ticks)");
                     break;
-                // case 2: add the next migration step here and bump CurrentSchemaVersion.
+                case 2:
+                    Execute(connection, transaction,
+                        "CREATE TABLE active_session (" +
+                        "id INTEGER PRIMARY KEY CHECK (id = 1), " +
+                        "task_name TEXT NOT NULL, " +
+                        "tag TEXT NULL, " +
+                        "started_at_utc_ticks INTEGER NOT NULL, " +
+                        "accumulated_ticks INTEGER NOT NULL, " +
+                        "segment_start_utc_ticks INTEGER NULL, " +
+                        "target_ticks INTEGER NULL, " +
+                        "last_seen_utc_ticks INTEGER NOT NULL, " +
+                        "mode TEXT NOT NULL, " +
+                        "is_break INTEGER NOT NULL, " +
+                        "pomodoro_phase INTEGER NOT NULL, " +
+                        "pomodoro_completed INTEGER NOT NULL)");
+                    break;
+                // case 3: add the next migration step here and bump CurrentSchemaVersion.
                 default:
                     throw new InvalidOperationException($"No migration defined for schema version {next}.");
             }

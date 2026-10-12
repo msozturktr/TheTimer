@@ -21,6 +21,7 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly SessionTimer _timer;
     private readonly ISessionRepository _repository;
+    private readonly IActiveSessionStore _activeStore;
     private readonly TimeProvider _timeProvider;
     private readonly INotifier _notifier;
     private readonly PomodoroCycle _cycle = new();
@@ -29,12 +30,15 @@ public partial class MainWindowViewModel : ViewModelBase
     private static readonly CultureInfo TrCulture = new("tr-TR");
     private bool _runningBreak;
     private bool _backgroundNoticeShown;
+    private bool _storeErrorNotified;
+    private ActiveSessionRecord? _pendingRecord;
     private DateOnly _loadedDay;
 
-    public MainWindowViewModel(SessionTimer timer, ISessionRepository repository, TimeProvider timeProvider, INotifier notifier)
+    public MainWindowViewModel(SessionTimer timer, ISessionRepository repository, IActiveSessionStore activeStore, TimeProvider timeProvider, INotifier notifier)
     {
         _timer = timer;
         _repository = repository;
+        _activeStore = activeStore;
         _timeProvider = timeProvider;
         _notifier = notifier;
 
@@ -45,6 +49,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _dayWatcher = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
         _dayWatcher.Tick += (_, _) =>
         {
+            TouchActiveSession();
             if (CurrentDay() != _loadedDay)
                 RefreshTodaySessions();
         };
@@ -53,6 +58,7 @@ public partial class MainWindowViewModel : ViewModelBase
         RefreshTodaySessions();
         UpdatePhaseText();
         UpdateElapsed();
+        LoadPendingRecovery();
     }
 
     [ObservableProperty]
@@ -113,6 +119,15 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial string TrayToolTip { get; set; } = "TheTimer";
 
+    [ObservableProperty]
+    public partial bool HasPendingRecovery { get; set; }
+
+    [ObservableProperty]
+    public partial bool CanResumePending { get; set; }
+
+    [ObservableProperty]
+    public partial string RecoveryText { get; set; } = string.Empty;
+
     public ObservableCollection<SessionItemViewModel> TodaySessions { get; } = [];
 
     public ObservableCollection<TaskTotalItemViewModel> TaskTotals { get; } = [];
@@ -123,7 +138,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private bool IsBreakPhase => Mode == TimerMode.Pomodoro && _cycle.CurrentPhase != PomodoroPhase.Work;
 
     private bool CanStart() =>
-        _timer.State == TimerState.Idle && (IsBreakPhase || !string.IsNullOrWhiteSpace(TaskName));
+        !HasPendingRecovery && _timer.State == TimerState.Idle && (IsBreakPhase || !string.IsNullOrWhiteSpace(TaskName));
 
     private bool CanPause() => _timer.State == TimerState.Running;
 
@@ -198,6 +213,134 @@ public partial class MainWindowViewModel : ViewModelBase
         return true;
     }
 
+    /// <summary>Refreshes the crash-recovery heartbeat; call on shutdown paths where the session stays active.</summary>
+    public void TouchActiveSession()
+    {
+        if (_timer.State == TimerState.Idle)
+            return;
+
+        try
+        {
+            _activeStore.Touch(_timeProvider.GetUtcNow());
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Failed to touch active session: {ex}");
+        }
+    }
+
+    private void LoadPendingRecovery()
+    {
+        try
+        {
+            _pendingRecord = _activeStore.Load();
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Failed to load active session: {ex}");
+            _pendingRecord = null;
+        }
+
+        if (_pendingRecord is not { } record)
+            return;
+
+        var lastSeen = TimeZoneInfo.ConvertTime(record.LastSeen, TimeZoneInfo.Local);
+        var task = record.IsBreak ? "Mola" : record.Timer.TaskName;
+        RecoveryText = $"Yarım kalan oturum: {task} · {FormatDuration(SessionRecovery.RecoveredElapsed(record))} " +
+                       $"({lastSeen:HH:mm})";
+        CanResumePending = SessionRecovery.CanResume(record);
+        HasPendingRecovery = true;
+        StartCommand.NotifyCanExecuteChanged();
+    }
+
+    private void ClosePendingRecovery()
+    {
+        _pendingRecord = null;
+        HasPendingRecovery = false;
+        StartCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private void ResumePending()
+    {
+        if (_pendingRecord is not { } record || !SessionRecovery.CanResume(record))
+            return;
+
+        var snapshot = SessionRecovery.ToResumeSnapshot(record, _timeProvider.GetUtcNow());
+        // Close first so the Start gate no longer matters; the restore itself re-saves the record.
+        ClosePendingRecovery();
+
+        Mode = Enum.TryParse<TimerMode>(record.Mode, out var mode) ? mode : TimerMode.Stopwatch;
+        _cycle.Restore(record.PomodoroPhase, record.PomodoroCompletedWorkCount);
+        _runningBreak = record.IsBreak;
+        if (!record.IsBreak)
+        {
+            TaskName = snapshot.TaskName;
+            Tag = snapshot.Tag;
+        }
+
+        UpdatePhaseText();
+        _timer.Restore(snapshot);
+    }
+
+    [RelayCommand]
+    private void SavePending()
+    {
+        if (_pendingRecord is not { } record)
+            return;
+
+        if (!record.IsBreak)
+        {
+            // Keep the recovery record if saving fails, so the session can be saved on a later run.
+            if (!SaveSession(SessionRecovery.ToFinishedSession(record)))
+                return;
+            RefreshTodaySessions();
+        }
+
+        ClearActiveStore();
+        ClosePendingRecovery();
+    }
+
+    [RelayCommand]
+    private void DiscardPending()
+    {
+        ClearActiveStore();
+        ClosePendingRecovery();
+    }
+
+    private void ClearActiveStore()
+    {
+        try
+        {
+            _activeStore.Clear();
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Failed to clear active session: {ex}");
+        }
+    }
+
+    private void PersistActiveSession()
+    {
+        try
+        {
+            if (_timer.CreateSnapshot() is { } snapshot)
+                _activeStore.Save(new ActiveSessionRecord(snapshot, _timeProvider.GetUtcNow(), Mode.ToString(),
+                    _runningBreak, _cycle.CurrentPhase, _cycle.CompletedWorkCount));
+            else
+                _activeStore.Clear();
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Failed to persist active session: {ex}");
+            if (!_storeErrorNotified)
+            {
+                _storeErrorNotified = true;
+                Notify("Oturum yedeklenemedi", "Çökme durumunda oturum kurtarılamayabilir");
+            }
+        }
+    }
+
     /// <summary>Stops the active session (if any) through the regular Stop path.</summary>
     public void StopActiveSession()
     {
@@ -267,16 +410,18 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void Notify(string title, string body) => _ = NotifySafeAsync(title, body);
 
-    private void SaveSession(TimeSession session)
+    private bool SaveSession(TimeSession session)
     {
         try
         {
             _repository.Add(session);
+            return true;
         }
         catch (Exception ex)
         {
             Trace.WriteLine($"Failed to save session: {ex}");
             Notify("Oturum kaydedilemedi", $"{session.TaskName} · {FormatDuration(session.Duration)}");
+            return false;
         }
     }
 
@@ -302,6 +447,7 @@ public partial class MainWindowViewModel : ViewModelBase
         };
         IsEditable = _timer.State == TimerState.Idle;
         IsPaused = _timer.State == TimerState.Paused;
+        PersistActiveSession();
 
         if (_timer.State == TimerState.Running)
             _ticker.Start();

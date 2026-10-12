@@ -12,6 +12,18 @@
 
     <TabControl>
         <TabItem Header="Zamanlayıcı">
+    <DockPanel>
+    <Border DockPanel.Dock="Top" IsVisible="{Binding HasPendingRecovery}" Margin="16,16,16,0" Padding="12"
+            CornerRadius="6" BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+        <StackPanel Spacing="8">
+            <TextBlock Text="{Binding RecoveryText}" TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Devam et" Command="{Binding ResumePendingCommand}" IsVisible="{Binding CanResumePending}" />
+                <Button Content="Kaydet" Command="{Binding SavePendingCommand}" />
+                <Button Content="Sil" Command="{Binding DiscardPendingCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="16" RowSpacing="12">
         <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8"
                     IsEnabled="{Binding IsEditable}">
@@ -46,6 +58,7 @@
         </StackPanel>
 
     </Grid>
+    </DockPanel>
             </TabItem>
             <TabItem Header="Bugün">
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="16" RowSpacing="8">

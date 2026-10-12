@@ -91,4 +91,28 @@ public class PomodoroCycleTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new PomodoroSettings { LongBreak = TimeSpan.Zero });
         Assert.Throws<ArgumentOutOfRangeException>(() => new PomodoroSettings { LongBreakEvery = 0 });
     }
+
+    [Fact]
+    public void Restore_SetsPhaseAndCount_AndAdvanceContinues()
+    {
+        var cycle = new PomodoroCycle();
+
+        cycle.Restore(PomodoroPhase.ShortBreak, 3);
+        Assert.Equal(PomodoroPhase.ShortBreak, cycle.CurrentPhase);
+        Assert.Equal(3, cycle.CompletedWorkCount);
+
+        cycle.Advance();
+        Assert.Equal(PomodoroPhase.Work, cycle.CurrentPhase);
+    }
+
+    [Fact]
+    public void Restore_Invalid_Throws()
+    {
+        var cycle = new PomodoroCycle();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => cycle.Restore(PomodoroPhase.Work, -1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => cycle.Restore((PomodoroPhase)42, 0));
+        Assert.Equal(PomodoroPhase.Work, cycle.CurrentPhase);
+        Assert.Equal(0, cycle.CompletedWorkCount);
+    }
 }

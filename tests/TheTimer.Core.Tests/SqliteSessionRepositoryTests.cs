@@ -155,12 +155,12 @@ public class SqliteSessionRepositoryTests : IDisposable
     }
 
     [Fact]
-    public void Initialize_SetsUserVersionToOne()
+    public void Initialize_SetsUserVersionToCurrent()
     {
         _ = new SqliteSessionRepository(DbPath);
         SqliteConnection.ClearAllPools();
 
-        Assert.Equal(1, GetUserVersion(DbPath));
+        Assert.Equal(2, GetUserVersion(DbPath));
     }
 
     [Fact]

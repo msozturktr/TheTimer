@@ -36,6 +36,17 @@ public sealed class PomodoroCycle
         }
     }
 
+    /// <summary>Restores a persisted position in the cycle.</summary>
+    public void Restore(PomodoroPhase phase, int completedWorkCount)
+    {
+        if (!Enum.IsDefined(phase))
+            throw new ArgumentOutOfRangeException(nameof(phase));
+        ArgumentOutOfRangeException.ThrowIfNegative(completedWorkCount);
+
+        CurrentPhase = phase;
+        CompletedWorkCount = completedWorkCount;
+    }
+
     public void Reset()
     {
         CurrentPhase = PomodoroPhase.Work;
