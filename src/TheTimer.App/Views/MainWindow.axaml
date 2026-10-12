@@ -22,54 +22,7 @@
                     <TextBlock Classes="nav-label" Text="ZAMANLAYICI" />
                 </StackPanel>
             </TabItem.Header>
-    <DockPanel>
-    <Border DockPanel.Dock="Top" Classes="panel" IsVisible="{Binding HasPendingRecovery}" Margin="16,16,16,0" Padding="12"
-            MaxWidth="560" CornerRadius="12">
-        <StackPanel Spacing="8">
-            <TextBlock Text="{Binding RecoveryText}" TextWrapping="Wrap" />
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Classes="ghost" Content="Devam et" Command="{Binding ResumePendingCommand}" IsVisible="{Binding CanResumePending}" />
-                <Button Classes="ghost" Content="Kaydet" Command="{Binding SavePendingCommand}" />
-                <Button Classes="ghost" Content="Sil" Command="{Binding DiscardPendingCommand}" />
-            </StackPanel>
-        </StackPanel>
-    </Border>
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="16" RowSpacing="12" MaxWidth="560" VerticalAlignment="Center">
-        <Border Grid.Row="0" Classes="segments" HorizontalAlignment="Center" IsEnabled="{Binding IsEditable}">
-            <StackPanel Orientation="Horizontal" Spacing="2">
-                <RadioButton Classes="segment" GroupName="Mode" Content="Kronometre" IsChecked="{Binding IsStopwatchMode}" />
-                <RadioButton Classes="segment" GroupName="Mode" Content="Geri sayım" IsChecked="{Binding IsCountdownMode}" />
-                <RadioButton Classes="segment" GroupName="Mode" Content="Pomodoro" IsChecked="{Binding IsPomodoroMode}" />
-            </StackPanel>
-        </Border>
-        <TextBox Grid.Row="1" PlaceholderText="Görev adı"
-                 Text="{Binding TaskName}" IsReadOnly="{Binding !IsEditable}" />
-        <TextBox Grid.Row="2" PlaceholderText="Etiket (isteğe bağlı)"
-                 Text="{Binding Tag}" IsReadOnly="{Binding !IsEditable}" />
-
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8"
-                    IsVisible="{Binding IsCountdownMode}">
-            <TextBlock Text="Süre (dk)" VerticalAlignment="Center" />
-            <NumericUpDown Value="{Binding CountdownMinutes}" Minimum="1" Maximum="600" Increment="1"
-                           FormatString="0" IsEnabled="{Binding IsEditable}" Width="140" />
-        </StackPanel>
-        <TextBlock Grid.Row="3" Text="{Binding PhaseText}" IsVisible="{Binding IsPomodoroMode}"
-                   Classes="overline amber" HorizontalAlignment="Center" />
-
-        <TextBlock Grid.Row="4" Text="{Binding ElapsedText}"
-                   Classes="numeral-xl" HorizontalAlignment="Center" />
-        <TextBlock Grid.Row="5" Text="{Binding StateText}" Classes="overline" HorizontalAlignment="Center" />
-
-        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="0,12,0,0">
-            <Button Classes="primary" Content="Başlat" Command="{Binding StartCommand}" />
-            <Button Classes="ghost" Content="Duraklat" Command="{Binding PauseCommand}" IsVisible="{Binding !IsPaused}" />
-            <Button Classes="ghost" Content="Devam" Command="{Binding ResumeCommand}" IsVisible="{Binding IsPaused}" />
-            <Button Classes="ghost" Content="Durdur" Command="{Binding StopCommand}" />
-            <Button Classes="ghost" Content="Sıfırla" Command="{Binding ResetPomodoroCommand}" IsVisible="{Binding IsPomodoroMode}" />
-        </StackPanel>
-
-    </Grid>
-    </DockPanel>
+                <views:TimerView />
             </TabItem>
             <TabItem>
             <TabItem.Header>

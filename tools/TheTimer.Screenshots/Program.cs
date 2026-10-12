@@ -17,12 +17,30 @@ const string ZoneId = "Europe/Istanbul";
 Environment.SetEnvironmentVariable("TZ", ZoneId); // view models read TimeZoneInfo.Local
 TimeZoneInfo.ClearCachedData();
 
-var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "plan", "plan-editor", "today", "today-recovery", "timer-recovery", "report" };
+var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "timer-running-stopwatch", "timer-countdown", "plan", "plan-editor", "today", "today-recovery", "timer-recovery", "report" };
 if (args.Length == 0)
 {
     Console.Error.WriteLine("Usage: TheTimer.Screenshots <outDir> [scenario...]");
     Console.Error.WriteLine("Scenarios: " + string.Join(", ", allScenarios));
     return 2;
+}
+
+// Optional "--size WxH" (default 1200x780); the size is appended to the file name when given.
+var sizeIndex = Array.IndexOf(args, "--size");
+var width = 1200;
+var height = 780;
+string? sizeSuffix = null;
+if (sizeIndex >= 0)
+{
+    var parts = sizeIndex + 1 < args.Length ? args[sizeIndex + 1].Split('x') : [];
+    if (parts.Length != 2 || !int.TryParse(parts[0], out width) || !int.TryParse(parts[1], out height))
+    {
+        Console.Error.WriteLine("Usage: --size WxH");
+        return 2;
+    }
+
+    sizeSuffix = $"-{width}x{height}";
+    args = args.Where((_, i) => i != sizeIndex && i != sizeIndex + 1).ToArray();
 }
 
 var outDir = Path.GetFullPath(args[0]);
@@ -45,14 +63,14 @@ AppBuilder.Configure<App>()
 var zone = TimeZoneInfo.FindSystemTimeZoneById(ZoneId);
 foreach (var name in scenarios)
 {
-    var path = Path.Combine(outDir, name + ".png");
-    Render(name, path, zone);
+    var path = Path.Combine(outDir, name + sizeSuffix + ".png");
+    Render(name, path, zone, width, height);
     Console.WriteLine(path);
 }
 
 return 0;
 
-static void Render(string scenario, string path, TimeZoneInfo zone)
+static void Render(string scenario, string path, TimeZoneInfo zone, int width, int height)
 {
     var start = new DateTimeOffset(DemoData.Today.ToDateTime(DemoData.Now), zone.GetUtcOffset(DemoData.Today.ToDateTime(DemoData.Now)));
     var clock = new FakeTimeProvider(start, zone);
@@ -70,7 +88,7 @@ static void Render(string scenario, string path, TimeZoneInfo zone)
     }
 
     var vm = AppComposition.Create(sessions, activeStore, plans, clock, new NoOpNotifier());
-    var window = new MainWindow { DataContext = vm, Width = 1200, Height = 780 };
+    var window = new MainWindow { DataContext = vm, Width = width, Height = height };
     window.Show();
     Pump();
 
@@ -83,6 +101,25 @@ static void Render(string scenario, string path, TimeZoneInfo zone)
             clock.Advance(TimeSpan.FromSeconds(-(9 * 60 + 31)));
             vm.StartCommand.Execute(null);
             clock.Advance(TimeSpan.FromSeconds(9 * 60 + 31));
+            Pump(800);
+            break;
+        case "timer-running-stopwatch":
+            vm.Mode = TimerMode.Stopwatch;
+            vm.TaskName = "Kod inceleme";
+            vm.Tag = "yazılım";
+            clock.Advance(TimeSpan.FromSeconds(-(72 * 60 + 30)));
+            vm.StartCommand.Execute(null);
+            clock.Advance(TimeSpan.FromSeconds(72 * 60 + 30));
+            Pump(800);
+            break;
+        case "timer-countdown":
+            vm.Mode = TimerMode.Countdown;
+            vm.TaskName = "Literatür okuma";
+            vm.Tag = "araştırma";
+            vm.CountdownMinutes = 45;
+            clock.Advance(TimeSpan.FromSeconds(-(17 * 60 + 20)));
+            vm.StartCommand.Execute(null);
+            clock.Advance(TimeSpan.FromSeconds(17 * 60 + 20));
             Pump(800);
             break;
         case "plan":
