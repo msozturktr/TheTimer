@@ -24,6 +24,7 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\thetimer.png" />
     <AvaloniaResource Include="Assets\Fonts\*.ttf" />
+    <Content Include="Assets\Sounds\complete.wav" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 
   <ItemGroup>

@@ -24,6 +24,7 @@ mkdir -p "$APPDIR/usr/bin" \
   "$APPDIR/usr/share/applications" \
   "$APPDIR/usr/share/icons/hicolor/256x256/apps"
 install -m 755 "$PUBLISH_DIR/TheTimer" "$APPDIR/usr/bin/TheTimer"
+install -Dm644 "$PUBLISH_DIR/Assets/Sounds/complete.wav" "$APPDIR/usr/bin/Assets/Sounds/complete.wav"
 cat > "$APPDIR/AppRun" <<'EOF'
 #!/bin/sh
 HERE="$(dirname "$(readlink -f "$0")")"
