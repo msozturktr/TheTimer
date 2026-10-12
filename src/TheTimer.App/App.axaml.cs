@@ -11,7 +11,6 @@ using TheTimer.App.Views;
 using TheTimer.Core;
 using TheTimer.Core.Notifications;
 using TheTimer.Core.Planning;
-using TheTimer.Core.Reports;
 using TheTimer.Core.Sessions;
 using TheTimer.Core.Storage;
 
@@ -32,21 +31,7 @@ public partial class App : Application
 
             var notifier = new FreedesktopNotifier();
             var (repository, activeStore, planRepository, databaseError) = CreateRepository();
-            var planService = new PlanService(planRepository);
-            var reportViewModel = new ReportViewModel(new ReportService(repository, planService), TimeProvider.System);
-            var viewModel = new MainWindowViewModel(
-                new SessionTimer(TimeProvider.System),
-                repository,
-                activeStore,
-                TimeProvider.System,
-                notifier)
-            {
-                Report = reportViewModel,
-            };
-            var plan = new PlanViewModel(planService, repository, TimeProvider.System, notifier, viewModel.StartFromPlan);
-            viewModel.Plan = plan;
-            viewModel.SessionsChanged += (_, _) => plan.Refresh();
-            viewModel.SessionsChanged += (_, _) => reportViewModel.Refresh();
+            var viewModel = AppComposition.Create(repository, activeStore, planRepository, TimeProvider.System, notifier);
             if (databaseError)
                 _ = NotifyDatabaseErrorAsync(notifier);
             var window = new MainWindow { DataContext = viewModel };

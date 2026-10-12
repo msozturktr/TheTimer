@@ -1,0 +1,645 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:TheTimer.App.Controls">
+
+    <!-- ========================= Tokens ========================= -->
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://TheTimer/Themes/Icons.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Fonts -->
+            <FontFamily x:Key="Font.Display">avares://TheTimer/Assets/Fonts#Bodoni Moda</FontFamily>
+            <FontFamily x:Key="Font.Body">avares://TheTimer/Assets/Fonts#Space Grotesk</FontFamily>
+            <FontFamily x:Key="Font.Mono">avares://TheTimer/Assets/Fonts#JetBrains Mono</FontFamily>
+
+            <!-- Colors -->
+            <Color x:Key="Color.Bg">#07091A</Color>
+            <Color x:Key="Color.SkyCenter">#141A3A</Color>
+            <Color x:Key="Color.Panel">#10142B</Color>
+            <Color x:Key="Color.Raised">#171C38</Color>
+            <Color x:Key="Color.TextPrimary">#EEF0FA</Color>
+            <Color x:Key="Color.TextSecondary">#9AA3C7</Color>
+            <Color x:Key="Color.TextFaint">#5B638A</Color>
+            <Color x:Key="Color.Amber">#FFB547</Color>
+            <Color x:Key="Color.Coral">#FF7A59</Color>
+            <Color x:Key="Color.Cyan">#7DD3FC</Color>
+            <Color x:Key="Color.Lavender">#A78BFA</Color>
+            <Color x:Key="Color.Mint">#5EEAD4</Color>
+            <Color x:Key="Color.Rose">#FF6B81</Color>
+
+            <!-- Surfaces -->
+            <SolidColorBrush x:Key="Brush.Bg" Color="#07091A" />
+            <SolidColorBrush x:Key="Brush.Panel" Color="#D910142B" />
+            <SolidColorBrush x:Key="Brush.PanelSolid" Color="#10142B" />
+            <SolidColorBrush x:Key="Brush.Raised" Color="#171C38" />
+            <SolidColorBrush x:Key="Brush.RaisedHover" Color="#1E2445" />
+            <SolidColorBrush x:Key="Brush.Hairline" Color="#12FFFFFF" />
+            <SolidColorBrush x:Key="Brush.HairlineStrong" Color="#24FFFFFF" />
+            <SolidColorBrush x:Key="Brush.Veil" Color="#0DFFFFFF" />
+            <RadialGradientBrush x:Key="Brush.Sky" Center="50%,42%" GradientOrigin="50%,42%" RadiusX="80%" RadiusY="80%">
+                <GradientStop Color="#141A3A" Offset="0" />
+                <GradientStop Color="#07091A" Offset="1" />
+            </RadialGradientBrush>
+
+            <!-- Text -->
+            <SolidColorBrush x:Key="Brush.TextPrimary" Color="#EEF0FA" />
+            <SolidColorBrush x:Key="Brush.TextSecondary" Color="#9AA3C7" />
+            <SolidColorBrush x:Key="Brush.TextFaint" Color="#5B638A" />
+            <SolidColorBrush x:Key="Brush.OnAmber" Color="#07091A" />
+
+            <!-- Accents -->
+            <SolidColorBrush x:Key="Brush.Amber" Color="#FFB547" />
+            <SolidColorBrush x:Key="Brush.Coral" Color="#FF7A59" />
+            <SolidColorBrush x:Key="Brush.Cyan" Color="#7DD3FC" />
+            <SolidColorBrush x:Key="Brush.Lavender" Color="#A78BFA" />
+            <SolidColorBrush x:Key="Brush.Mint" Color="#5EEAD4" />
+            <SolidColorBrush x:Key="Brush.Rose" Color="#FF6B81" />
+            <SolidColorBrush x:Key="Brush.AmberWash" Color="#26FFB547" />
+            <SolidColorBrush x:Key="Brush.AmberRing" Color="#59FFB547" />
+
+            <!-- ACTUAL = amber to coral; PLANNED = cyan to lavender -->
+            <LinearGradientBrush x:Key="Brush.Actual" StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#FFB547" Offset="0" />
+                <GradientStop Color="#FF7A59" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Brush.ActualHover" StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#FFC56B" Offset="0" />
+                <GradientStop Color="#FF8F72" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Brush.ActualHorizontal" StartPoint="0%,50%" EndPoint="100%,50%">
+                <GradientStop Color="#FFB547" Offset="0" />
+                <GradientStop Color="#FF7A59" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Brush.ActualVertical" StartPoint="50%,0%" EndPoint="50%,100%">
+                <GradientStop Color="#FFB547" Offset="0" />
+                <GradientStop Color="#FF7A59" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Brush.Planned" StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#7DD3FC" Offset="0" />
+                <GradientStop Color="#A78BFA" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Brush.PlannedVertical" StartPoint="50%,0%" EndPoint="50%,100%">
+                <GradientStop Color="#7DD3FC" Offset="0" />
+                <GradientStop Color="#A78BFA" Offset="1" />
+            </LinearGradientBrush>
+            <LinearGradientBrush x:Key="Brush.PlannedGhost" StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#737DD3FC" Offset="0" />
+                <GradientStop Color="#73A78BFA" Offset="1" />
+            </LinearGradientBrush>
+
+            <!-- Glows (depth is light, not dark shadow) -->
+            <BoxShadows x:Key="Shadow.ActualGlow">0 0 24 0 #59FF9650</BoxShadows>
+            <BoxShadows x:Key="Shadow.ActualGlowStrong">0 0 34 2 #8CFF9650</BoxShadows>
+            <BoxShadows x:Key="Shadow.ActualGlowSoft">0 0 10 0 #4DFFB547</BoxShadows>
+            <BoxShadows x:Key="Shadow.PlannedGlow">0 0 18 0 #337DD3FC</BoxShadows>
+            <BoxShadows x:Key="Shadow.AmberDot">0 0 8 0 #99FFB547</BoxShadows>
+            <BoxShadows x:Key="Shadow.PanelLift">0 8 32 0 #66000000</BoxShadows>
+
+            <CornerRadius x:Key="Radius.Panel">16</CornerRadius>
+            <CornerRadius x:Key="Radius.Field">10</CornerRadius>
+            <CornerRadius x:Key="Radius.Pill">999</CornerRadius>
+
+            <!-- Stock Fluent resources re-pointed at the Astrolab palette -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <FontFamily x:Key="ContentControlThemeFontFamily">avares://TheTimer/Assets/Fonts#Space Grotesk</FontFamily>
+                    <CornerRadius x:Key="ControlCornerRadius">10</CornerRadius>
+                    <CornerRadius x:Key="OverlayCornerRadius">14</CornerRadius>
+
+                    <!-- Ink fields -->
+                    <SolidColorBrush x:Key="TextControlBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#1B2140" />
+                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#171C38" />
+                    <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="#0F1328" />
+                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="#1FFFFFFF" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#33FFFFFF" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#FFB547" />
+                    <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#12FFFFFF" />
+                    <SolidColorBrush x:Key="TextControlForeground" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="TextControlForegroundDisabled" Color="#5B638A" />
+                    <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#5B638A" />
+                    <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#5B638A" />
+                    <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#5B638A" />
+                    <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#66FFB547" />
+
+                    <SolidColorBrush x:Key="ComboBoxBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#1B2140" />
+                    <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#1B2140" />
+                    <SolidColorBrush x:Key="ComboBoxBackgroundDisabled" Color="#0F1328" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#1FFFFFFF" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#33FFFFFF" />
+                    <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#33FFFFFF" />
+                    <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#24FFFFFF" />
+                    <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#1AFFFFFF" />
+                    <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#26FFB547" />
+                    <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#33FFB547" />
+                    <SolidColorBrush x:Key="ComboBoxItemBackgroundPressed" Color="#26FFFFFF" />
+                    <SolidColorBrush x:Key="ComboBoxItemForegroundSelected" Color="#FFB547" />
+                    <SolidColorBrush x:Key="ComboBoxItemForegroundSelectedPointerOver" Color="#FFB547" />
+
+                    <SolidColorBrush x:Key="ButtonBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#1E2445" />
+                    <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#262D55" />
+                    <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#0F1328" />
+                    <SolidColorBrush x:Key="ButtonBorderBrush" Color="#1FFFFFFF" />
+                    <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#33FFFFFF" />
+                    <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#33FFFFFF" />
+                    <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="#12FFFFFF" />
+                    <SolidColorBrush x:Key="ButtonForeground" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="ButtonForegroundDisabled" Color="#5B638A" />
+
+                    <SolidColorBrush x:Key="ToggleButtonBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="#1E2445" />
+                    <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="#262D55" />
+                    <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="#26FFB547" />
+                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="#33FFB547" />
+                    <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="#40FFB547" />
+                    <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="#1FFFFFFF" />
+                    <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="#99FFB547" />
+                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="#CCFFB547" />
+                    <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="#CCFFB547" />
+                    <SolidColorBrush x:Key="ToggleButtonForeground" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="#FFB547" />
+                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="#FFC56B" />
+                    <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="#FFC56B" />
+
+                    <SolidColorBrush x:Key="ScrollBarBackground" Color="Transparent" />
+                    <SolidColorBrush x:Key="ScrollBarBackgroundPointerOver" Color="Transparent" />
+                    <SolidColorBrush x:Key="ScrollBarTrackFill" Color="Transparent" />
+                    <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="#08FFFFFF" />
+                    <SolidColorBrush x:Key="ScrollBarTrackStroke" Color="Transparent" />
+                    <SolidColorBrush x:Key="ScrollBarTrackStrokePointerOver" Color="Transparent" />
+                    <Color x:Key="ScrollBarThumbBackgroundColor">#33FFFFFF</Color>
+                    <Color x:Key="ScrollBarPanningThumbBackgroundColor">#59FFFFFF</Color>
+                    <SolidColorBrush x:Key="ScrollBarThumbFill" Color="#33FFFFFF" />
+                    <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="#59FFFFFF" />
+                    <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#80FFB547" />
+
+                    <SolidColorBrush x:Key="TimePickerButtonBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="TimePickerButtonBackgroundPointerOver" Color="#1B2140" />
+                    <SolidColorBrush x:Key="TimePickerButtonBackgroundPressed" Color="#1B2140" />
+                    <SolidColorBrush x:Key="TimePickerButtonBorderBrush" Color="#1FFFFFFF" />
+                    <SolidColorBrush x:Key="TimePickerButtonBorderBrushPointerOver" Color="#33FFFFFF" />
+                    <SolidColorBrush x:Key="TimePickerButtonBorderBrushPressed" Color="#FFB547" />
+                    <SolidColorBrush x:Key="TimePickerButtonForeground" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="TimePickerButtonForegroundPointerOver" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="TimePickerButtonForegroundPressed" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="TimePickerSpacerFill" Color="#1FFFFFFF" />
+                    <SolidColorBrush x:Key="TimePickerFlyoutPresenterBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="TimePickerFlyoutPresenterBorderBrush" Color="#24FFFFFF" />
+                    <SolidColorBrush x:Key="TimePickerFlyoutPresenterHighlightFill" Color="#26FFB547" />
+                    <SolidColorBrush x:Key="TimePickerFlyoutPresenterSpacerFill" Color="#1FFFFFFF" />
+                    <SolidColorBrush x:Key="CalendarDatePickerBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="CalendarDatePickerBackgroundPointerOver" Color="#1B2140" />
+                    <SolidColorBrush x:Key="CalendarDatePickerBackgroundPressed" Color="#1B2140" />
+                    <SolidColorBrush x:Key="CalendarDatePickerBackgroundFocused" Color="#171C38" />
+                    <SolidColorBrush x:Key="CalendarDatePickerBorderBrush" Color="#1FFFFFFF" />
+                    <SolidColorBrush x:Key="CalendarDatePickerBorderBrushPointerOver" Color="#33FFFFFF" />
+                    <SolidColorBrush x:Key="CalendarDatePickerBorderBrushPressed" Color="#FFB547" />
+                    <SolidColorBrush x:Key="CalendarDatePickerCalendarGlyphForeground" Color="#9AA3C7" />
+                    <SolidColorBrush x:Key="CalendarDatePickerTextForeground" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="CalendarViewBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="CalendarViewBorderBrush" Color="#24FFFFFF" />
+                    <SolidColorBrush x:Key="CalendarViewCalendarItemForeground" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="CalendarViewOutOfScopeForeground" Color="#5B638A" />
+                    <SolidColorBrush x:Key="CalendarViewSelectedBorderBrush" Color="#FFB547" />
+                    <SolidColorBrush x:Key="CalendarViewTodayForeground" Color="#FFB547" />
+                    <SolidColorBrush x:Key="ToolTipBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="ToolTipForeground" Color="#EEF0FA" />
+                    <SolidColorBrush x:Key="ToolTipBorderBrush" Color="#24FFFFFF" />
+
+                    <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="#24FFFFFF" />
+                    <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#171C38" />
+                    <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#24FFFFFF" />
+
+                    <SolidColorBrush x:Key="SystemControlBackgroundChromeMediumLowBrush" Color="#171C38" />
+                    <SolidColorBrush x:Key="SystemControlPageBackgroundAltHighBrush" Color="#10142B" />
+                    <SolidColorBrush x:Key="SystemControlForegroundBaseMediumBrush" Color="#33FFFFFF" />
+                    <SolidColorBrush x:Key="SystemControlHighlightListLowBrush" Color="#10FFB547" />
+                    <SolidColorBrush x:Key="SystemControlErrorTextForegroundBrush" Color="#FF6B81" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Styles.Resources>
+
+    <!-- ========================= Base ========================= -->
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{DynamicResource Brush.Bg}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextPrimary}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Body}" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Body}" />
+    </Style>
+
+    <!-- ========================= Typography ========================= -->
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Display}" />
+        <Setter Property="FontSize" Value="34" />
+        <Setter Property="FontWeight" Value="Normal" />
+    </Style>
+    <Style Selector="TextBlock.h2">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Display}" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontWeight" Value="Normal" />
+    </Style>
+    <Style Selector="TextBlock.serif-italic">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Display}" />
+        <Setter Property="FontStyle" Value="Italic" />
+        <Setter Property="FontSize" Value="18" />
+    </Style>
+    <Style Selector="TextBlock.overline">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="LetterSpacing" Value="1.5" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextFaint}" />
+    </Style>
+    <Style Selector="TextBlock.mono">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+    <Style Selector="TextBlock.numeral-xl">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontWeight" Value="Light" />
+        <Setter Property="FontSize" Value="84" />
+    </Style>
+    <Style Selector="TextBlock.numeral-lg">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontWeight" Value="Light" />
+        <Setter Property="FontSize" Value="36" />
+    </Style>
+    <Style Selector="TextBlock.numeral-md">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="20" />
+    </Style>
+    <Style Selector="TextBlock.secondary">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}" />
+    </Style>
+    <Style Selector="TextBlock.faint">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextFaint}" />
+    </Style>
+    <Style Selector="TextBlock.amber">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Amber}" />
+    </Style>
+    <Style Selector="TextBlock.cyan">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Cyan}" />
+    </Style>
+    <Style Selector="TextBlock.mint">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Mint}" />
+    </Style>
+    <Style Selector="TextBlock.rose">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Rose}" />
+    </Style>
+
+    <!-- ========================= Panels ========================= -->
+    <Style Selector="Border.panel">
+        <Setter Property="Background" Value="{DynamicResource Brush.Panel}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Hairline}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="20" />
+    </Style>
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource Brush.Raised}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Hairline}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="14,12" />
+    </Style>
+    <Style Selector="Border.segments">
+        <Setter Property="Background" Value="#B310142B" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Hairline}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="999" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+    <Style Selector="Border.hairline-top">
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Hairline}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+    </Style>
+    <Style Selector="Separator">
+        <Setter Property="Background" Value="{DynamicResource Brush.Hairline}" />
+    </Style>
+
+    <!-- ========================= Buttons ========================= -->
+    <Style Selector="Button">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Body}" />
+        <Setter Property="Padding" Value="14,7" />
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+
+    <Style Selector="Button.primary">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.OnAmber}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="20,9" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="999" />
+    </Style>
+    <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Actual}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.OnAmber}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="BoxShadow" Value="{DynamicResource Shadow.ActualGlow}" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.ActualHover}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.OnAmber}" />
+        <Setter Property="BoxShadow" Value="{DynamicResource Shadow.ActualGlowStrong}" />
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Actual}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.OnAmber}" />
+        <Setter Property="RenderTransform" Value="scale(0.97)" />
+    </Style>
+    <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Raised}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextFaint}" />
+        <Setter Property="BoxShadow" Value="none" />
+    </Style>
+
+    <Style Selector="Button.ghost">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextPrimary}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Padding" Value="16,7" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="999" />
+    </Style>
+    <Style Selector="Button.ghost /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.HairlineStrong}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextPrimary}" />
+    </Style>
+    <Style Selector="Button.ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#14FFFFFF" />
+        <Setter Property="BorderBrush" Value="#40FFFFFF" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextPrimary}" />
+    </Style>
+    <Style Selector="Button.ghost:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#1FFFFFFF" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextPrimary}" />
+    </Style>
+    <Style Selector="Button.ghost:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextFaint}" />
+    </Style>
+
+    <!-- Round icon button; add .primary for the large gradient action button -->
+    <Style Selector="Button.round">
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="999" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.round /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.HairlineStrong}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}" />
+    </Style>
+    <Style Selector="Button.round:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#14FFFFFF" />
+        <Setter Property="BorderBrush" Value="#40FFFFFF" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextPrimary}" />
+    </Style>
+    <Style Selector="Button.round:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextFaint}" />
+    </Style>
+    <Style Selector="Button.round.primary">
+        <Setter Property="Width" Value="64" />
+        <Setter Property="Height" Value="64" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="Button.round.primary /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Actual}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.OnAmber}" />
+        <Setter Property="BoxShadow" Value="{DynamicResource Shadow.ActualGlow}" />
+    </Style>
+    <Style Selector="Button.round.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.ActualHover}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.OnAmber}" />
+        <Setter Property="BoxShadow" Value="{DynamicResource Shadow.ActualGlowStrong}" />
+    </Style>
+    <Style Selector="Button.round.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.Raised}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextFaint}" />
+        <Setter Property="BoxShadow" Value="none" />
+    </Style>
+
+    <!-- Round day chip (ToggleButton) -->
+    <Style Selector="ToggleButton.chip">
+        <Setter Property="Width" Value="38" />
+        <Setter Property="Height" Value="38" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="999" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ToggleButton.chip /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Hairline}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextFaint}" />
+    </Style>
+    <Style Selector="ToggleButton.chip:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#14FFFFFF" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}" />
+    </Style>
+    <Style Selector="ToggleButton.chip:checked /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Brush.AmberWash}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.AmberRing}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Amber}" />
+        <Setter Property="BoxShadow" Value="{DynamicResource Shadow.ActualGlowSoft}" />
+    </Style>
+    <Style Selector="ToggleButton.chip:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#33FFB547" />
+        <Setter Property="Foreground" Value="#FFC56B" />
+    </Style>
+
+    <!-- Segmented switch: wrap RadioButton.segment items in Border.segments > StackPanel(horizontal) -->
+    <Style Selector="RadioButton.segment">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Padding" Value="20,7" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Seg" Background="Transparent" BorderBrush="Transparent" BorderThickness="1"
+                        CornerRadius="999" Padding="{TemplateBinding Padding}">
+                    <Panel>
+                        <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Border Name="Underline" Width="12" Height="2" CornerRadius="1" IsVisible="False"
+                                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-5"
+                                Background="{DynamicResource Brush.Amber}"
+                                BoxShadow="0 0 6 0 #FFFFB547" />
+                    </Panel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="RadioButton.segment:pointerover /template/ Border#Seg">
+        <Setter Property="Background" Value="#0FFFFFFF" />
+    </Style>
+    <Style Selector="RadioButton.segment:checked /template/ Border#Seg">
+        <Setter Property="Background" Value="#0FFFFFFF" />
+        <Setter Property="BorderBrush" Value="#40FFB547" />
+        <Setter Property="BoxShadow" Value="0 0 15 0 #33FFB547" />
+    </Style>
+    <Style Selector="RadioButton.segment:checked /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Amber}" />
+    </Style>
+    <Style Selector="RadioButton.segment:checked /template/ Border#Underline">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="RadioButton.segment:disabled">
+        <Setter Property="Opacity" Value="0.45" />
+    </Style>
+
+    <!-- ========================= Fields ========================= -->
+    <Style Selector="TextBox">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Body}" />
+        <Setter Property="Padding" Value="12,9" />
+        <Setter Property="MinHeight" Value="38" />
+        <Setter Property="CornerRadius" Value="10" />
+    </Style>
+    <Style Selector="ComboBox">
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="MinHeight" Value="38" />
+    </Style>
+    <Style Selector="NumericUpDown">
+        <Setter Property="MinHeight" Value="38" />
+    </Style>
+    <Style Selector="TimePicker">
+        <Setter Property="MinHeight" Value="38" />
+    </Style>
+    <Style Selector="CalendarDatePicker">
+        <Setter Property="MinHeight" Value="38" />
+    </Style>
+    <Style Selector="TextBlock.field-label">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="LetterSpacing" Value="1.5" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextFaint}" />
+        <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+
+    <Style Selector="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource Brush.Raised}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.HairlineStrong}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextPrimary}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="10,6" />
+    </Style>
+
+    <Style Selector="ScrollBar">
+        <Setter Property="Width" Value="10" />
+    </Style>
+    <Style Selector="ScrollBar:vertical">
+        <Setter Property="Width" Value="10" />
+    </Style>
+    <Style Selector="ScrollBar:horizontal">
+        <Setter Property="Height" Value="10" />
+    </Style>
+
+    <!-- ========================= Navigation rail ========================= -->
+    <Style Selector="TabControl.rail">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical" Spacing="6" />
+            </ItemsPanelTemplate>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid ColumnDefinitions="88,*">
+                    <Border Grid.Column="0" Background="{DynamicResource Brush.Panel}"
+                            BorderBrush="{DynamicResource Brush.Hairline}" BorderThickness="0,0,1,0">
+                        <StackPanel Spacing="34" Margin="0,22,0,0">
+                            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                                <Border Width="40" Height="40" CornerRadius="999" HorizontalAlignment="Center"
+                                        BorderThickness="1" BorderBrush="{DynamicResource Brush.AmberRing}"
+                                        BoxShadow="{DynamicResource Shadow.ActualGlowSoft}">
+                                    <c:Icon Data="{DynamicResource Icon.Clock}" Width="26" Height="26"
+                                            Foreground="{DynamicResource Brush.Amber}" StrokeThickness="1.8"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="TheTimer" Classes="mono" FontSize="11" FontWeight="Medium"
+                                           HorizontalAlignment="Center" />
+                                <TextBlock Text="ASTROLAB" Classes="overline" FontSize="9" LetterSpacing="1.8"
+                                           HorizontalAlignment="Center" Margin="0,-4,0,0" />
+                            </StackPanel>
+                            <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+                        </StackPanel>
+                    </Border>
+                    <ContentPresenter Grid.Column="1" Name="PART_SelectedContentHost"
+                                      Content="{TemplateBinding SelectedContent}"
+                                      ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="TabControl.rail > TabItem">
+        <Setter Property="Height" Value="64" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextFaint}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel Name="Root" Background="Transparent">
+                    <Border Name="Hover" Margin="8,0" CornerRadius="12" Background="Transparent" />
+                    <Border Name="Indicator" Width="3" Height="26" CornerRadius="2" HorizontalAlignment="Left"
+                            VerticalAlignment="Center" IsVisible="False"
+                            Background="{DynamicResource Brush.Amber}" BoxShadow="{DynamicResource Shadow.AmberDot}" />
+                    <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="TabControl.rail > TabItem:pointerover /template/ Border#Hover">
+        <Setter Property="Background" Value="#0AFFFFFF" />
+    </Style>
+    <Style Selector="TabControl.rail > TabItem:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}" />
+    </Style>
+    <Style Selector="TabControl.rail > TabItem:selected">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Amber}" />
+    </Style>
+    <Style Selector="TabControl.rail > TabItem:selected /template/ Border#Indicator">
+        <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="TabControl.rail > TabItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{Binding $parent[TabItem].Foreground}" />
+    </Style>
+    <Style Selector="TextBlock.nav-label">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="9" />
+        <Setter Property="LetterSpacing" Value="0.6" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+</Styles>

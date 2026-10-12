@@ -2,14 +2,29 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="TheTimer.App.App"
              xmlns:local="using:TheTimer.App"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Dark">
 
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
 
     <Application.Styles>
-        <FluentTheme />
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <!-- Stock controls follow the Astrolab accent (amber) and ink surfaces. -->
+                <ColorPaletteResources x:Key="Dark" Accent="#FFB547" AltHigh="#07091A" AltLow="#07091A"
+                                       AltMedium="#07091A" AltMediumHigh="#07091A" AltMediumLow="#07091A"
+                                       BaseHigh="#EEF0FA" BaseLow="#262D55" BaseMedium="#9AA3C7"
+                                       BaseMediumHigh="#C9CFE8" BaseMediumLow="#5B638A"
+                                       ChromeAltLow="#C9CFE8" ChromeBlackHigh="#07091A" ChromeBlackLow="#171C38"
+                                       ChromeBlackMedium="#10142B" ChromeBlackMediumLow="#10142B"
+                                       ChromeDisabledHigh="#262D55" ChromeDisabledLow="#5B638A"
+                                       ChromeGray="#9AA3C7" ChromeHigh="#9AA3C7" ChromeLow="#171C38"
+                                       ChromeMedium="#1E2445" ChromeMediumLow="#171C38"
+                                       ChromeWhite="#EEF0FA" ListLow="#1E2445" ListMedium="#262D55"
+                                       RegionColor="#10142B" ErrorText="#FF6B81" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
+        <StyleInclude Source="avares://TheTimer/Themes/Astrolab.axaml" />
     </Application.Styles>
 </Application>

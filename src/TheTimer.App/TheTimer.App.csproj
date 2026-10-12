@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\thetimer.png" />
+    <AvaloniaResource Include="Assets\Fonts\*.ttf" />
   </ItemGroup>
 
   <ItemGroup>

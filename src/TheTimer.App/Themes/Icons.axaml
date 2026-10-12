@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- 24x24 outline glyphs, stroke-drawn by Controls/Icon (original paths in the Material Symbols outlined style;
+         the Apache-2.0 Material icon set was the visual reference, no path data is copied). -->
+    <StreamGeometry x:Key="Icon.Timer">M12 6.5a7.5 7.5 0 1 0 0 15a7.5 7.5 0 1 0 0-15Z M12 14V10 M9.5 2.5h5 M18.6 6.6l1.4-1.4</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Plan">M6 4.5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2Z M4 9.5h16 M8 2.5v3 M16 2.5v3 M8 13h5 M8 16.2h8</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Today">M6 4.5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2Z M4 9.5h16 M8 2.5v3 M16 2.5v3 M8.5 12.8h3v3h-3Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Report">M5 20V12 M12 20V5 M19 20v-9 M3.5 20.5h17</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Play">M8.5 5.8v12.4a.6.6 0 0 0 .9.5l9.6-6.2a.6.6 0 0 0 0-1L9.4 5.3a.6.6 0 0 0-.9.5Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Pause">M7.5 5.5h3v13h-3Z M13.5 5.5h3v13h-3Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Stop">M7 7h10v10H7Z</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Skip">M6.5 6v12l8-6Z M17.5 6v12</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Plus">M12 5v14 M5 12h14</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Edit">M4.5 19.5l.8-4L16.3 4.5a2 2 0 0 1 2.8 2.8L8.1 18.3Z M14.5 6.3l3.2 3.2</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Delete">M6.5 6.5l11 11 M17.5 6.5l-11 11</StreamGeometry>
+    <StreamGeometry x:Key="Icon.ChevronLeft">M14.5 6l-6 6 6 6</StreamGeometry>
+    <StreamGeometry x:Key="Icon.ChevronRight">M9.5 6l6 6-6 6</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Repeat">M17 3l3 3-3 3 M20 6H8a4 4 0 0 0-4 4v1 M7 21l-3-3 3-3 M4 18h12a4 4 0 0 0 4-4v-1</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Warning">M12 4l9 16H3Z M12 10v4.5 M12 17.2v.3</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Clock">M12 5.2V12l4.4 2.7</StreamGeometry>
+</ResourceDictionary>

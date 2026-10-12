@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:TheTimer.App.ViewModels"
+             xmlns:c="using:TheTimer.App.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="620"
@@ -19,15 +20,15 @@
     </UserControl.Styles>
 
     <ScrollViewer>
-        <StackPanel Margin="16" Spacing="12">
+        <StackPanel Margin="24,16" Spacing="12" MaxWidth="880">
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                <Button Grid.Column="0" Content="◀" Command="{Binding PreviousWeekCommand}" ToolTip.Tip="Önceki hafta" />
+                <Button Grid.Column="0" Classes="round" Command="{Binding PreviousWeekCommand}" ToolTip.Tip="Önceki hafta"><c:Icon Data="{StaticResource Icon.ChevronLeft}" Width="18" Height="18" /></Button>
                 <StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Center">
-                    <TextBlock Text="{Binding WeekText}" FontWeight="SemiBold" FontSize="18" HorizontalAlignment="Center" />
-                    <Button Content="Bu hafta" Command="{Binding ThisWeekCommand}" IsEnabled="{Binding !IsCurrentWeek}"
+                    <TextBlock Text="{Binding WeekText}" Classes="h2" HorizontalAlignment="Center" />
+                    <Button Classes="ghost" Content="Bu hafta" Command="{Binding ThisWeekCommand}" IsEnabled="{Binding !IsCurrentWeek}"
                             HorizontalAlignment="Center" Padding="8,2" />
                 </StackPanel>
-                <Button Grid.Column="2" Content="▶" Command="{Binding NextWeekCommand}" ToolTip.Tip="Sonraki hafta" />
+                <Button Grid.Column="2" Classes="round" Command="{Binding NextWeekCommand}" ToolTip.Tip="Sonraki hafta"><c:Icon Data="{StaticResource Icon.ChevronRight}" Width="18" Height="18" /></Button>
             </Grid>
 
             <TextBlock Text="{Binding TotalsText}" HorizontalAlignment="Center" TextWrapping="Wrap" />
@@ -55,7 +56,7 @@
                                                 HorizontalAlignment="Center" CornerRadius="3"
                                                 Background="{DynamicResource SystemControlHighlightAccentBrush}" />
                                     </Grid>
-                                    <TextBlock Text="{Binding ValueText}" FontFamily="monospace" FontSize="11"
+                                    <TextBlock Text="{Binding ValueText}" Classes="mono" FontSize="11"
                                                HorizontalAlignment="Center" />
                                     <TextBlock Text="{Binding WeekdayText}" FontSize="12" HorizontalAlignment="Center" />
                                     <TextBlock Text="{Binding DayNumberText}" FontSize="11" Opacity="0.6"
@@ -91,12 +92,12 @@
                         <DataTemplate x:DataType="vm:ReportTaskItemViewModel">
                             <Grid ColumnDefinitions="*,52,52,56" ColumnSpacing="8" Margin="0,2">
                                 <TextBlock Grid.Column="0" Text="{Binding TaskName}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Grid.Column="1" Text="{Binding PlannedText}" FontFamily="monospace"
+                                <TextBlock Grid.Column="1" Text="{Binding PlannedText}" Classes="mono"
                                            HorizontalAlignment="Right" />
-                                <TextBlock Grid.Column="2" Text="{Binding ActualText}" FontFamily="monospace"
+                                <TextBlock Grid.Column="2" Text="{Binding ActualText}" Classes="mono"
                                            HorizontalAlignment="Right" />
-                                <TextBlock Grid.Column="3" Text="{Binding DifferenceText}" FontFamily="monospace"
-                                           HorizontalAlignment="Right" Classes="diff"
+                                <TextBlock Grid.Column="3" Text="{Binding DifferenceText}" Classes="mono diff"
+                                           HorizontalAlignment="Right"
                                            Classes.positive="{Binding IsPositive}" Classes.negative="{Binding IsNegative}" />
                             </Grid>
                         </DataTemplate>

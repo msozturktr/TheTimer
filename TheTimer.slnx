@@ -6,4 +6,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/TheTimer.Core.Tests/TheTimer.Core.Tests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/TheTimer.Screenshots/TheTimer.Screenshots.csproj" />
+  </Folder>
 </Solution>
