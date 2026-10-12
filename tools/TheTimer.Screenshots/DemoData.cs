@@ -53,4 +53,36 @@ public static class DemoData
         for (var i = 0; i < 5; i++)
             plans.Add(new PlanBlock(Guid.NewGuid(), Thesis, "yazım", new TimeOnly(9, 0), new TimeOnly(11, 0), monday.AddDays(i), null));
     }
+
+    /// <summary>Friday of the previous week, 18:00: the report scenarios show that week with "today" mid-week.</summary>
+    public static DateTimeOffset ReportNow(TimeZoneInfo zone)
+    {
+        var local = Today.AddDays(-3).ToDateTime(new TimeOnly(18, 0));
+        return new DateTimeOffset(local, zone.GetUtcOffset(local));
+    }
+
+    /// <summary>Extra plan blocks and a weekend for the previous week so the weekly report has a fuller shape.</summary>
+    public static void SeedReportWeek(ISessionRepository sessions, IPlanRepository plans, TimeZoneInfo zone)
+    {
+        var monday = Today.AddDays(-7);
+        void Add(int dayOffset, string start, string end, string task, string tag)
+        {
+            var s = ZoneTime.ToInstant(monday.AddDays(dayOffset), TimeOnly.Parse(start), zone);
+            var e = ZoneTime.ToInstant(monday.AddDays(dayOffset), TimeOnly.Parse(end), zone);
+            sessions.Add(new TimeSession(Guid.NewGuid(), task, tag, s, e, e - s));
+        }
+
+        Add(5, "10:00", "11:15", "Literatür okuma", "araştırma");
+        Add(6, "16:00", "16:45", "Spor", "sağlık");
+        Add(2, "13:00", "14:30", "Sistem tasarımı", "yazılım");
+        Add(2, "15:00", "16:30", "Literatür okuma", "araştırma"); // Wednesday overshoots its plan
+
+        for (var i = 0; i < 5; i++)
+            plans.Add(new PlanBlock(Guid.NewGuid(), "Kod inceleme", "yazılım", new TimeOnly(13, 30), new TimeOnly(15, 0), monday.AddDays(i), null));
+        plans.Add(new PlanBlock(Guid.NewGuid(), "Literatür okuma", "araştırma", new TimeOnly(9, 0), new TimeOnly(10, 30), monday.AddDays(1), null));
+        plans.Add(new PlanBlock(Guid.NewGuid(), "Literatür okuma", "araştırma", new TimeOnly(10, 0), new TimeOnly(11, 30), monday.AddDays(3), null));
+        plans.Add(new PlanBlock(Guid.NewGuid(), "Literatür okuma", "araştırma", new TimeOnly(10, 0), new TimeOnly(12, 0), monday.AddDays(5), null));
+        plans.Add(new PlanBlock(Guid.NewGuid(), "Sistem tasarımı", "yazılım", new TimeOnly(13, 0), new TimeOnly(15, 0), monday.AddDays(2), null));
+        plans.Add(new PlanBlock(Guid.NewGuid(), "Spor", "sağlık", new TimeOnly(17, 0), new TimeOnly(18, 0), monday.AddDays(2), null));
+    }
 }

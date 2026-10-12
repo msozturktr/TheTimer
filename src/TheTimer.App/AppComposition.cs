@@ -17,7 +17,7 @@ public static class AppComposition
         INotifier notifier)
     {
         var planService = new PlanService(planRepository);
-        var reportViewModel = new ReportViewModel(new ReportService(repository, planService), timeProvider);
+        var reportViewModel = new ReportViewModel(new ReportService(repository, planService), timeProvider, repository, planService);
         var viewModel = new MainWindowViewModel(new SessionTimer(timeProvider), repository, activeStore, timeProvider, notifier)
         {
             Report = reportViewModel,
