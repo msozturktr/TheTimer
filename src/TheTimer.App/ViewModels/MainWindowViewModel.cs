@@ -140,6 +140,9 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>Raised after saved sessions were reloaded (save, delete, recovery, day change).</summary>
     public event EventHandler? SessionsChanged;
 
+    /// <summary>Plan tab view model; set by <c>App</c> before the window is shown.</summary>
+    public PlanViewModel? Plan { get; set; }
+
     [ObservableProperty]
     public partial int SelectedTabIndex { get; set; }
 

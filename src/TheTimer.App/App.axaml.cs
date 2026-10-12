@@ -10,6 +10,7 @@ using TheTimer.App.ViewModels;
 using TheTimer.App.Views;
 using TheTimer.Core;
 using TheTimer.Core.Notifications;
+using TheTimer.Core.Planning;
 using TheTimer.Core.Sessions;
 using TheTimer.Core.Storage;
 
@@ -29,13 +30,17 @@ public partial class App : Application
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             var notifier = new FreedesktopNotifier();
-            var (repository, activeStore, databaseError) = CreateRepository();
+            var (repository, activeStore, planRepository, databaseError) = CreateRepository();
             var viewModel = new MainWindowViewModel(
                 new SessionTimer(TimeProvider.System),
                 repository,
                 activeStore,
                 TimeProvider.System,
                 notifier);
+            var plan = new PlanViewModel(
+                new PlanService(planRepository), repository, TimeProvider.System, notifier, viewModel.StartFromPlan);
+            viewModel.Plan = plan;
+            viewModel.SessionsChanged += (_, _) => plan.Refresh();
             if (databaseError)
                 _ = NotifyDatabaseErrorAsync(notifier);
             var window = new MainWindow { DataContext = viewModel };
@@ -54,17 +59,17 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static (ISessionRepository Repository, IActiveSessionStore ActiveStore, bool Failed) CreateRepository()
+    private static (ISessionRepository Repository, IActiveSessionStore ActiveStore, IPlanRepository PlanRepository, bool Failed) CreateRepository()
     {
         try
         {
             var database = new SqliteDatabase(AppPaths.FromEnvironment().DatabasePath);
-            return (new SqliteSessionRepository(database), new SqliteActiveSessionStore(database), false);
+            return (new SqliteSessionRepository(database), new SqliteActiveSessionStore(database), new SqlitePlanRepository(database), false);
         }
         catch (Exception ex)
         {
             Trace.WriteLine($"Failed to open session database: {ex}");
-            return (new InMemorySessionRepository(), new InMemoryActiveSessionStore(), true);
+            return (new InMemorySessionRepository(), new InMemoryActiveSessionStore(), new InMemoryPlanRepository(), true);
         }
     }
 

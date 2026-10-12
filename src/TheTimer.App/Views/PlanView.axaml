@@ -1,0 +1,154 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TheTimer.App.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="720"
+             x:Class="TheTimer.App.Views.PlanView"
+             x:DataType="vm:PlanViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.positive">
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+        </Style>
+        <Style Selector="TextBlock.negative">
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="10">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="6">
+                <Button Grid.Column="0" Content="◀" Command="{Binding PreviousDayCommand}" ToolTip.Tip="Önceki gün" />
+                <Button Grid.Column="1" Content="Bugün" Command="{Binding GoTodayCommand}" />
+                <Button Grid.Column="2" Content="▶" Command="{Binding NextDayCommand}" ToolTip.Tip="Sonraki gün" />
+                <Button Grid.Column="4" Content="＋ Blok ekle" Command="{Binding NewBlockCommand}" />
+            </Grid>
+            <TextBlock Text="{Binding DayText}" FontWeight="SemiBold" FontSize="18" />
+
+            <!-- Add / edit panel -->
+            <Border IsVisible="{Binding IsEditorOpen}" Padding="12" CornerRadius="6" BorderThickness="1"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding EditorTitle}" FontWeight="SemiBold" />
+                    <TextBox PlaceholderText="Görev (zorunlu)" Text="{Binding TaskName}" />
+                    <TextBox PlaceholderText="Etiket (isteğe bağlı)" Text="{Binding Tag}" />
+                    <Grid ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="8">
+                        <TextBlock Grid.Column="0" Text="Başlangıç" VerticalAlignment="Center" />
+                        <TimePicker Grid.Column="1" SelectedTime="{Binding StartTime}" MinuteIncrement="5"
+                                    ClockIdentifier="24HourClock" />
+                        <TextBlock Grid.Column="2" Text="Bitiş" VerticalAlignment="Center" />
+                        <TimePicker Grid.Column="3" SelectedTime="{Binding EndTime}" MinuteIncrement="5"
+                                    ClockIdentifier="24HourClock" />
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <TextBlock Grid.Column="0" Text="Tekrar" VerticalAlignment="Center" />
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding RepeatOptions}"
+                                  SelectedIndex="{Binding RepeatIndex}" IsEnabled="{Binding CanEditRecurrence}"
+                                  HorizontalAlignment="Stretch" />
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding DayToggles}" IsVisible="{Binding ShowCustomDays}"
+                                  IsEnabled="{Binding CanEditRecurrence}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:DayToggleViewModel">
+                                <ToggleButton Content="{Binding Label}" IsChecked="{Binding IsChecked}" Padding="8,4" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding ShowRecurrenceControls}"
+                                IsEnabled="{Binding CanEditRecurrence}">
+                        <TextBlock Text="Bitiş tarihi" VerticalAlignment="Center" />
+                        <CalendarDatePicker SelectedDate="{Binding EndDate}" PlaceholderText="Süresiz" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding RecurrenceHint}" Opacity="0.6" FontSize="12" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ErrorText}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Ekle" Command="{Binding SubmitCommand}" IsVisible="{Binding IsNew}" />
+                        <Button Content="Kaydet" Command="{Binding SubmitCommand}" IsVisible="{Binding IsEditingOneOff}" />
+                        <Button Content="Yalnızca bu gün" Command="{Binding SaveThisDayCommand}"
+                                IsVisible="{Binding IsEditingRecurring}" />
+                        <Button Content="Bu ve sonraki günler" Command="{Binding SaveFollowingCommand}"
+                                IsVisible="{Binding IsEditingRecurring}" />
+                        <Button Content="İptal" Command="{Binding CancelEditCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Recurring delete confirmation -->
+            <Border IsVisible="{Binding IsConfirmingDelete}" Padding="12" CornerRadius="6" BorderThickness="1"
+                    BorderBrush="{DynamicResource SystemControlErrorTextForegroundBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding ConfirmText}" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Yalnızca bu gün" Command="{Binding ConfirmDeleteThisDayCommand}" />
+                        <Button Content="Bu ve sonraki günler" Command="{Binding ConfirmDeleteFollowingCommand}" />
+                        <Button Content="Vazgeç" Command="{Binding CancelDeleteCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Bu gün için plan yok." Opacity="0.6" IsVisible="{Binding IsEmpty}" />
+
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PlanOccurrenceItemViewModel">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Margin="0,4" ColumnSpacing="8">
+                            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding TimeRange}" FontFamily="monospace" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding TaskName}" TextTrimming="CharacterEllipsis"
+                                           FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <TextBlock Text="↻" IsVisible="{Binding IsRecurring}" ToolTip.Tip="{Binding RecurrenceTip}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="⚠" IsVisible="{Binding HasOverlap}" VerticalAlignment="Center"
+                                           ToolTip.Tip="Başka bir blokla çakışıyor" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding Tag}" IsVisible="{Binding HasTag}" Opacity="0.6" FontSize="12" />
+                                <TextBlock Text="{Binding ActualText}" Opacity="0.6" FontSize="12" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Orientation="Horizontal" Spacing="4"
+                                        VerticalAlignment="Center">
+                                <Button Content="Başlat" Command="{Binding StartCommand}" />
+                                <Button Content="Düzenle" Command="{Binding EditCommand}" />
+                                <Button Content="Sil" Command="{Binding DeleteCommand}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <StackPanel Spacing="4" IsVisible="{Binding !IsEmpty}">
+                <Separator />
+                <TextBlock Text="{Binding SummaryText}" FontWeight="SemiBold" />
+                <Grid ColumnDefinitions="*,70,70,70" Opacity="0.6">
+                    <TextBlock Grid.Column="0" Text="Görev" />
+                    <TextBlock Grid.Column="1" Text="Planlanan" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="2" Text="Gerçek" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Column="3" Text="Fark" HorizontalAlignment="Right" />
+                </Grid>
+                <ItemsControl ItemsSource="{Binding TaskRows}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TaskComparisonItemViewModel">
+                            <Grid ColumnDefinitions="*,70,70,70" Margin="0,2">
+                                <TextBlock Grid.Column="0" Text="{Binding TaskName}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="1" Text="{Binding PlannedText}" FontFamily="monospace"
+                                           HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="2" Text="{Binding ActualText}" FontFamily="monospace"
+                                           HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="3" Text="{Binding DifferenceText}" FontFamily="monospace"
+                                           HorizontalAlignment="Right"
+                                           Classes.positive="{Binding IsPositive}" Classes.negative="{Binding IsNegative}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

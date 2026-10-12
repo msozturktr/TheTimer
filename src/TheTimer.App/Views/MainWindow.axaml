@@ -1,12 +1,13 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:TheTimer.App.ViewModels"
+        xmlns:views="using:TheTimer.App.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="620"
         x:Class="TheTimer.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Width="420" Height="620"
+        Width="520" Height="720" MinWidth="480" MinHeight="560"
         Icon="/Assets/thetimer.png"
         Title="TheTimer">
 
@@ -59,6 +60,9 @@
 
     </Grid>
     </DockPanel>
+            </TabItem>
+            <TabItem Header="Plan">
+                <views:PlanView DataContext="{Binding Plan}" />
             </TabItem>
             <TabItem Header="Bugün">
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Margin="16" RowSpacing="8">
