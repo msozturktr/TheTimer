@@ -196,6 +196,16 @@ public partial class ReportViewModel : ViewModelBase
 
         WeekText = ReportFormat.WeekRange(data.WeekStart);
         IsCurrentWeek = data.WeekStart == WeeklyReport.WeekStart(today);
+        var weeks = (data.WeekStart.DayNumber - WeeklyReport.WeekStart(today).DayNumber) / 7;
+        WeekNavLabel = weeks switch
+        {
+            0 => "Bu hafta",
+            -1 => "Geçen hafta",
+            1 => "Gelecek hafta",
+            < 0 => $"{-weeks} hafta önce",
+            _ => $"{weeks} hafta sonra",
+        };
+        OnPropertyChanged(nameof(WeekNavLabel));
 
         ActualTotalText = ReportFormat.Hm(data.TotalActual);
         PlannedTotalText = ReportFormat.Hm(data.TotalPlanned);
@@ -269,6 +279,9 @@ public partial class ReportViewModel : ViewModelBase
         _weekStart = _weekStart.AddDays(7);
         Refresh();
     }
+
+    /// <summary>Relative name of the shown week; the button always jumps back to this week.</summary>
+    public string WeekNavLabel { get; private set; } = "Bu hafta";
 
     [RelayCommand]
     private void ThisWeek()

@@ -69,7 +69,7 @@
                         <Button Classes="round" Width="32" Height="32" Command="{Binding PreviousWeekCommand}" ToolTip.Tip="Önceki hafta">
                             <c:Icon Data="{StaticResource Icon.ChevronLeft}" Width="16" Height="16" />
                         </Button>
-                        <Button Classes="ghost" Content="Bu hafta" Command="{Binding ThisWeekCommand}" IsEnabled="{Binding !IsCurrentWeek}" />
+                        <Button Classes="ghost" Content="{Binding WeekNavLabel}" ToolTip.Tip="Bu haftaya dön" Command="{Binding ThisWeekCommand}" IsEnabled="{Binding !IsCurrentWeek}" />
                         <Button Classes="round" Width="32" Height="32" Command="{Binding NextWeekCommand}" ToolTip.Tip="Sonraki hafta">
                             <c:Icon Data="{StaticResource Icon.ChevronRight}" Width="16" Height="16" />
                         </Button>
