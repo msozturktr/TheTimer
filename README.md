@@ -47,7 +47,7 @@ chmod +x TheTimer-<ver>-x86_64.AppImage
 ```
 
 ### Arch Linux  
-AUR'dan `thetimer-bin` ya da bu depodan:
+`thetimer-bin` yakında AUR'da. Şimdilik bu depodan:
 ```bash
 cd packaging/aur && makepkg -si
 ```
