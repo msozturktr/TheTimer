@@ -178,7 +178,7 @@ public partial class MainWindowViewModel : ViewModelBase
         var session = _timer.Stop();
         if (!_runningBreak)
         {
-            _repository.Add(session);
+            SaveSession(session);
             RefreshTodaySessions();
         }
     }
@@ -236,7 +236,7 @@ public partial class MainWindowViewModel : ViewModelBase
             var wasBreak = _runningBreak;
             if (!wasBreak)
             {
-                _repository.Add(session);
+                SaveSession(session);
                 RefreshTodaySessions();
             }
 
@@ -249,7 +249,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         else
         {
-            _repository.Add(session);
+            SaveSession(session);
             RefreshTodaySessions();
             Notify("Süre doldu", $"{session.TaskName} tamamlandı");
         }
@@ -266,6 +266,19 @@ public partial class MainWindowViewModel : ViewModelBase
     };
 
     private void Notify(string title, string body) => _ = NotifySafeAsync(title, body);
+
+    private void SaveSession(TimeSession session)
+    {
+        try
+        {
+            _repository.Add(session);
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Failed to save session: {ex}");
+            Notify("Oturum kaydedilemedi", $"{session.TaskName} · {FormatDuration(session.Duration)}");
+        }
+    }
 
     private async Task NotifySafeAsync(string title, string body)
     {
@@ -337,7 +350,15 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void DeleteSession(Guid id)
     {
-        _repository.Delete(id);
+        try
+        {
+            _repository.Delete(id);
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Failed to delete session {id}: {ex}");
+            Notify("Oturum silinemedi", "Veritabanı hatası");
+        }
         RefreshTodaySessions();
     }
 
@@ -345,7 +366,16 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         var tz = TimeZoneInfo.Local;
         _loadedDay = CurrentDay();
-        var sessions = _repository.GetByDay(_loadedDay, tz);
+        IReadOnlyList<TimeSession> sessions;
+        try
+        {
+            sessions = _repository.GetByDay(_loadedDay, tz);
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Failed to load sessions: {ex}");
+            sessions = Array.Empty<TimeSession>();
+        }
 
         DateText = _loadedDay.ToDateTime(TimeOnly.MinValue).ToString("d MMMM yyyy dddd", TrCulture);
         TodaySessions.Clear();

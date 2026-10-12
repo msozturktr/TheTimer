@@ -12,7 +12,7 @@ public sealed class InMemorySessionRepository : ISessionRepository
 
     public IReadOnlyList<TimeSession> GetByDay(DateOnly day, TimeZoneInfo timeZone) =>
         _sessions
-            .Where(s => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(s.StartedAt, timeZone).DateTime) == day)
+            .Where(s => SessionDayFilter.IsOnDay(s, day, timeZone))
             .OrderByDescending(s => s.StartedAt)
             .ToList();
 

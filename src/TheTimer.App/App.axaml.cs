@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -7,6 +8,8 @@ using Avalonia.Platform;
 using TheTimer.App.Services;
 using TheTimer.App.ViewModels;
 using TheTimer.App.Views;
+using TheTimer.Core;
+using TheTimer.Core.Notifications;
 using TheTimer.Core.Sessions;
 
 namespace TheTimer.App;
@@ -24,11 +27,15 @@ public partial class App : Application
         {
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
+            var notifier = new FreedesktopNotifier();
+            var (repository, databaseError) = CreateRepository();
             var viewModel = new MainWindowViewModel(
                 new SessionTimer(TimeProvider.System),
-                new InMemorySessionRepository(),
+                repository,
                 TimeProvider.System,
-                new FreedesktopNotifier());
+                notifier);
+            if (databaseError)
+                _ = NotifyDatabaseErrorAsync(notifier);
             var window = new MainWindow { DataContext = viewModel };
             desktop.MainWindow = window;
 
@@ -39,6 +46,32 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static (ISessionRepository Repository, bool Failed) CreateRepository()
+    {
+        try
+        {
+            return (new SqliteSessionRepository(AppPaths.FromEnvironment().DatabasePath), false);
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Failed to open session database: {ex}");
+            return (new InMemorySessionRepository(), true);
+        }
+    }
+
+    private static async Task NotifyDatabaseErrorAsync(INotifier notifier)
+    {
+        try
+        {
+            await notifier.NotifyAsync("Veritabanı açılamadı", "Kayıtlar yalnızca bu oturum boyunca tutulacak")
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Trace.WriteLine($"Notification failed: {ex}");
+        }
     }
 
     private void SetupTrayIcon(IClassicDesktopStyleApplicationLifetime desktop, MainWindow window, MainWindowViewModel vm)
