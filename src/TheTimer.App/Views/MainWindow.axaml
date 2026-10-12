@@ -10,7 +10,7 @@
         Icon="/Assets/thetimer.png"
         Title="TheTimer">
 
-    <TabControl>
+    <TabControl SelectedIndex="{Binding SelectedTabIndex}">
         <TabItem Header="Zamanlayıcı">
     <DockPanel>
     <Border DockPanel.Dock="Top" IsVisible="{Binding HasPendingRecovery}" Margin="16,16,16,0" Padding="12"

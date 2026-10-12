@@ -137,6 +137,28 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private bool IsBreakPhase => Mode == TimerMode.Pomodoro && _cycle.CurrentPhase != PomodoroPhase.Work;
 
+    /// <summary>Raised after saved sessions were reloaded (save, delete, recovery, day change).</summary>
+    public event EventHandler? SessionsChanged;
+
+    [ObservableProperty]
+    public partial int SelectedTabIndex { get; set; }
+
+    /// <summary>Starts a stopwatch session for a planned block and switches to the timer tab.</summary>
+    public bool StartFromPlan(string taskName, string? tag)
+    {
+        if (_timer.State != TimerState.Idle || HasPendingRecovery)
+            return false;
+
+        Mode = TimerMode.Stopwatch;
+        TaskName = taskName;
+        Tag = tag;
+        SelectedTabIndex = 0;
+        if (!StartCommand.CanExecute(null))
+            return false;
+        StartCommand.Execute(null);
+        return true;
+    }
+
     private bool CanStart() =>
         !HasPendingRecovery && _timer.State == TimerState.Idle && (IsBreakPhase || !string.IsNullOrWhiteSpace(TaskName));
 
@@ -533,6 +555,7 @@ public partial class MainWindowViewModel : ViewModelBase
         HasSessions = sessions.Count > 0;
         _savedTotal = SessionSummary.Total(sessions);
         UpdateTotal();
+        SessionsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private TimeSpan _savedTotal;
