@@ -16,5 +16,11 @@ public sealed class InMemorySessionRepository : ISessionRepository
             .OrderByDescending(s => s.StartedAt)
             .ToList();
 
+    public IReadOnlyList<TimeSession> GetByRange(DateOnly from, DateOnly toInclusive, TimeZoneInfo timeZone) =>
+        _sessions
+            .Where(s => SessionDayFilter.IsInRange(s, from, toInclusive, timeZone))
+            .OrderBy(s => s.StartedAt)
+            .ToList();
+
     public bool Delete(Guid id) => _sessions.RemoveAll(s => s.Id == id) > 0;
 }

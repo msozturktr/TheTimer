@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using TheTimer.Core.Pomodoro;
 using TheTimer.Core.Sessions;
+using TheTimer.Core.Storage;
 
 namespace TheTimer.Core.Tests;
 
@@ -54,18 +55,19 @@ public class ActiveSessionStoreTests : IDisposable
             command.ExecuteNonQuery();
         }
 
-        var repository = new SqliteSessionRepository(DbPath);
+        var db = new SqliteDatabase(DbPath);
+        var repository = new SqliteSessionRepository(db);
 
-        Assert.Equal(2, ScalarLong(DbPath, "PRAGMA user_version"));
+        Assert.Equal(3, ScalarLong(DbPath, "PRAGMA user_version"));
         var sessions = repository.GetByDay(DateOnly.FromDateTime(T0.UtcDateTime), TimeZoneInfo.Utc);
         Assert.Equal(id, Assert.Single(sessions).Id);
-        Assert.Null(repository.Load());
+        Assert.Null(new SqliteActiveSessionStore(db).Load());
     }
 
     [Fact]
     public void Sqlite_SaveLoad_RoundTrips()
     {
-        var store = new SqliteSessionRepository(DbPath);
+        var store = new SqliteActiveSessionStore(new SqliteDatabase(DbPath));
 
         store.Save(Running());
         Assert.Equal(Running(), store.Load());
@@ -77,7 +79,7 @@ public class ActiveSessionStoreTests : IDisposable
     [Fact]
     public void Sqlite_Save_Upserts_SingleRow()
     {
-        var store = new SqliteSessionRepository(DbPath);
+        var store = new SqliteActiveSessionStore(new SqliteDatabase(DbPath));
 
         store.Save(Running());
         store.Save(Paused());
@@ -88,7 +90,7 @@ public class ActiveSessionStoreTests : IDisposable
     [Fact]
     public void Sqlite_Touch_UpdatesOnlyLastSeen()
     {
-        var store = new SqliteSessionRepository(DbPath);
+        var store = new SqliteActiveSessionStore(new SqliteDatabase(DbPath));
         store.Save(Running());
 
         store.Touch(T0.AddMinutes(30));
@@ -99,7 +101,7 @@ public class ActiveSessionStoreTests : IDisposable
     [Fact]
     public void Sqlite_Touch_WithNothingStored_IsNoOp()
     {
-        var store = new SqliteSessionRepository(DbPath);
+        var store = new SqliteActiveSessionStore(new SqliteDatabase(DbPath));
 
         store.Touch(T0);
 
@@ -110,7 +112,7 @@ public class ActiveSessionStoreTests : IDisposable
     [Fact]
     public void Sqlite_Clear_RemovesRecord()
     {
-        var store = new SqliteSessionRepository(DbPath);
+        var store = new SqliteActiveSessionStore(new SqliteDatabase(DbPath));
         store.Save(Running());
 
         store.Clear();
@@ -121,10 +123,10 @@ public class ActiveSessionStoreTests : IDisposable
     [Fact]
     public void Sqlite_RecordSurvivesReopen()
     {
-        new SqliteSessionRepository(DbPath).Save(Running());
+        new SqliteActiveSessionStore(new SqliteDatabase(DbPath)).Save(Running());
         SqliteConnection.ClearAllPools();
 
-        Assert.Equal(Running(), new SqliteSessionRepository(DbPath).Load());
+        Assert.Equal(Running(), new SqliteActiveSessionStore(new SqliteDatabase(DbPath)).Load());
     }
 
     [Fact]

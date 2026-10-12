@@ -11,6 +11,7 @@ using TheTimer.App.Views;
 using TheTimer.Core;
 using TheTimer.Core.Notifications;
 using TheTimer.Core.Sessions;
+using TheTimer.Core.Storage;
 
 namespace TheTimer.App;
 
@@ -57,8 +58,8 @@ public partial class App : Application
     {
         try
         {
-            var sqlite = new SqliteSessionRepository(AppPaths.FromEnvironment().DatabasePath);
-            return (sqlite, sqlite, false);
+            var database = new SqliteDatabase(AppPaths.FromEnvironment().DatabasePath);
+            return (new SqliteSessionRepository(database), new SqliteActiveSessionStore(database), false);
         }
         catch (Exception ex)
         {

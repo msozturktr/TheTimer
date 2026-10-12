@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using TheTimer.Core.Sessions;
+using TheTimer.Core.Storage;
 
 namespace TheTimer.Core.Tests;
 
@@ -43,7 +44,7 @@ public class SqliteSessionRepositoryTests : IDisposable
     [Fact]
     public void Constructor_CreatesDirectoryAndDatabase()
     {
-        _ = new SqliteSessionRepository(DbPath);
+        _ = new SqliteSessionRepository(new SqliteDatabase(DbPath));
 
         Assert.True(File.Exists(DbPath));
     }
@@ -51,7 +52,7 @@ public class SqliteSessionRepositoryTests : IDisposable
     [Fact]
     public void AddThenGetByDay_RoundTripsAllFieldsExactly()
     {
-        var repo = new SqliteSessionRepository(DbPath);
+        var repo = new SqliteSessionRepository(new SqliteDatabase(DbPath));
         // Non-zero offset and sub-second ticks: only the instant must survive.
         var start = new DateTimeOffset(2026, 10, 12, 9, 15, 30, TimeSpan.FromHours(3)).AddTicks(4321);
         var withTag = Make("coding", start, "work");
@@ -81,10 +82,10 @@ public class SqliteSessionRepositoryTests : IDisposable
     public void Data_SurvivesNewRepositoryInstance()
     {
         var s = Make("a", new DateTimeOffset(2026, 10, 12, 8, 0, 0, TimeSpan.Zero), "t");
-        new SqliteSessionRepository(DbPath).Add(s);
+        new SqliteSessionRepository(new SqliteDatabase(DbPath)).Add(s);
         SqliteConnection.ClearAllPools();
 
-        var result = new SqliteSessionRepository(DbPath).GetByDay(new DateOnly(2026, 10, 12), TimeZoneInfo.Utc);
+        var result = new SqliteSessionRepository(new SqliteDatabase(DbPath)).GetByDay(new DateOnly(2026, 10, 12), TimeZoneInfo.Utc);
 
         Assert.Equal([s], result);
     }
@@ -92,7 +93,7 @@ public class SqliteSessionRepositoryTests : IDisposable
     [Fact]
     public void GetByDay_UsesGivenTimeZone()
     {
-        var repo = new SqliteSessionRepository(DbPath);
+        var repo = new SqliteSessionRepository(new SqliteDatabase(DbPath));
         var lateUtc = Make("late", new DateTimeOffset(2026, 10, 11, 22, 30, 0, TimeSpan.Zero));
         var beforeMidnight = Make("before", new DateTimeOffset(2026, 10, 11, 20, 59, 0, TimeSpan.Zero));
         repo.Add(lateUtc);
@@ -107,7 +108,7 @@ public class SqliteSessionRepositoryTests : IDisposable
     [Fact]
     public void GetByDay_MidnightBoundary_UsesLocalDay()
     {
-        var repo = new SqliteSessionRepository(DbPath);
+        var repo = new SqliteSessionRepository(new SqliteDatabase(DbPath));
         var atMidnight = Make("midnight", new DateTimeOffset(2026, 3, 1, 21, 0, 0, TimeSpan.Zero));
         var justBefore = Make("before", new DateTimeOffset(2026, 3, 1, 20, 59, 59, TimeSpan.Zero));
         repo.Add(atMidnight);
@@ -120,7 +121,7 @@ public class SqliteSessionRepositoryTests : IDisposable
     [Fact]
     public void GetByDay_OrdersByStartDescending()
     {
-        var repo = new SqliteSessionRepository(DbPath);
+        var repo = new SqliteSessionRepository(new SqliteDatabase(DbPath));
         var a = Make("a", new DateTimeOffset(2026, 10, 12, 8, 0, 0, TimeSpan.Zero));
         var b = Make("b", new DateTimeOffset(2026, 10, 12, 12, 0, 0, TimeSpan.Zero));
         var c = Make("c", new DateTimeOffset(2026, 10, 12, 10, 0, 0, TimeSpan.Zero));
@@ -134,13 +135,13 @@ public class SqliteSessionRepositoryTests : IDisposable
     [Fact]
     public void GetByDay_Empty_ReturnsEmpty()
     {
-        Assert.Empty(new SqliteSessionRepository(DbPath).GetByDay(new DateOnly(2026, 10, 12), TimeZoneInfo.Utc));
+        Assert.Empty(new SqliteSessionRepository(new SqliteDatabase(DbPath)).GetByDay(new DateOnly(2026, 10, 12), TimeZoneInfo.Utc));
     }
 
     [Fact]
     public void Delete_ExistingId_RemovesAndReturnsTrue()
     {
-        var repo = new SqliteSessionRepository(DbPath);
+        var repo = new SqliteSessionRepository(new SqliteDatabase(DbPath));
         var s = Make("a", new DateTimeOffset(2026, 10, 12, 8, 0, 0, TimeSpan.Zero));
         repo.Add(s);
 
@@ -151,26 +152,26 @@ public class SqliteSessionRepositoryTests : IDisposable
     [Fact]
     public void Delete_UnknownId_ReturnsFalse()
     {
-        Assert.False(new SqliteSessionRepository(DbPath).Delete(Guid.NewGuid()));
+        Assert.False(new SqliteSessionRepository(new SqliteDatabase(DbPath)).Delete(Guid.NewGuid()));
     }
 
     [Fact]
     public void Initialize_SetsUserVersionToCurrent()
     {
-        _ = new SqliteSessionRepository(DbPath);
+        _ = new SqliteSessionRepository(new SqliteDatabase(DbPath));
         SqliteConnection.ClearAllPools();
 
-        Assert.Equal(2, GetUserVersion(DbPath));
+        Assert.Equal(3, GetUserVersion(DbPath));
     }
 
     [Fact]
     public void Initialize_NewerUserVersion_Throws()
     {
-        _ = new SqliteSessionRepository(DbPath);
+        _ = new SqliteSessionRepository(new SqliteDatabase(DbPath));
         SqliteConnection.ClearAllPools();
         SetUserVersion(DbPath, 99);
         SqliteConnection.ClearAllPools();
 
-        Assert.Throws<InvalidOperationException>(() => new SqliteSessionRepository(DbPath));
+        Assert.Throws<InvalidOperationException>(() => new SqliteSessionRepository(new SqliteDatabase(DbPath)));
     }
 }
