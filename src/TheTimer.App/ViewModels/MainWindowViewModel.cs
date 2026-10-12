@@ -403,6 +403,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void HandleCompletion(TimeSession session)
     {
+        Services.CompletionSound.Play();
         if (Mode == TimerMode.Pomodoro)
         {
             var wasBreak = _runningBreak;
