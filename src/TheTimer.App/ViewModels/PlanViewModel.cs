@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -12,6 +13,8 @@ namespace TheTimer.App.ViewModels;
 /// <summary>Plan tab: day navigation, occurrence list, planned-vs-actual summary, editor and block-start reminders.</summary>
 public sealed partial class PlanViewModel : ViewModelBase
 {
+    private static readonly CultureInfo Tr = new("tr-TR");
+    private const double EditorReserve = 366; // card width + gap, kept free on the ribbon while editing
     private static readonly TimeSpan ReminderInterval = TimeSpan.FromSeconds(30);
 
     private readonly PlanService _service;
@@ -59,6 +62,9 @@ public sealed partial class PlanViewModel : ViewModelBase
 
     public ObservableCollection<DayToggleViewModel> DayToggles { get; } = [];
 
+    /// <summary>Recently used tags (the day's blocks and sessions) offered as quick picks in the editor.</summary>
+    public ObservableCollection<TagChipViewModel> RecentTags { get; } = [];
+
     public IReadOnlyList<string> RepeatOptions { get; } = ["Tekrar yok", "Her gün", "Hafta içi", "Özel günler"];
 
     [ObservableProperty]
@@ -73,6 +79,40 @@ public sealed partial class PlanViewModel : ViewModelBase
     [ObservableProperty]
     public partial string SummaryText { get; set; } = string.Empty;
 
+    // Ribbon geometry: visible hour range (whole hours) and the "now" marker.
+    [ObservableProperty]
+    public partial int RangeStartHour { get; set; } = 8;
+
+    [ObservableProperty]
+    public partial int RangeEndHour { get; set; } = 20;
+
+    /// <summary>Minutes since midnight of "now" when the selected day is today and inside the range; otherwise -1.</summary>
+    [ObservableProperty]
+    public partial double NowMinutes { get; set; } = -1;
+
+    [ObservableProperty]
+    public partial string NowText { get; set; } = string.Empty;
+
+    /// <summary>Minute the ribbon should scroll to when shown: "now", else the first block.</summary>
+    [ObservableProperty]
+    public partial double FocusMinutes { get; set; }
+
+    // Planned vs actual summary (right column).
+    [ObservableProperty]
+    public partial string PlannedTotalText { get; set; } = "0:00";
+
+    [ObservableProperty]
+    public partial string ActualTotalText { get; set; } = "0:00";
+
+    [ObservableProperty]
+    public partial string BlockCountText { get; set; } = "0 blok";
+
+    [ObservableProperty]
+    public partial double Ratio { get; set; }
+
+    [ObservableProperty]
+    public partial string RatioText { get; set; } = "%0";
+
     // Editor state.
     [ObservableProperty]
     public partial bool IsEditorOpen { get; set; }
@@ -86,14 +126,29 @@ public sealed partial class PlanViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? Tag { get; set; }
 
+    /// <summary>Typed "HH:mm" start; <see cref="StartTime"/> is its parsed value (null when unparseable).</summary>
     [ObservableProperty]
-    public partial TimeSpan? StartTime { get; set; }
+    public partial string StartText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    public partial TimeSpan? EndTime { get; set; }
+    public partial string EndText { get; set; } = string.Empty;
+
+    public TimeSpan? StartTime
+    {
+        get => ParseTime(StartText);
+        set => StartText = FormatTime(value);
+    }
+
+    public TimeSpan? EndTime
+    {
+        get => ParseTime(EndText);
+        set => EndText = FormatTime(value);
+    }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowRecurrenceControls), nameof(ShowCustomDays))]
+    [NotifyPropertyChangedFor(
+        nameof(ShowRecurrenceControls), nameof(ShowCustomDays), nameof(IsRepeatNone), nameof(IsRepeatEveryDay),
+        nameof(IsRepeatWeekdays), nameof(IsRepeatCustom), nameof(CanEditDays))]
     public partial int RepeatIndex { get; set; }
 
     [ObservableProperty]
@@ -101,6 +156,25 @@ public sealed partial class PlanViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial string ErrorText { get; set; } = string.Empty;
+
+    /// <summary>Anchor of the floating editor card: the edited block's span and column (new block: no connector).</summary>
+    [ObservableProperty]
+    public partial double EditorAnchorStart { get; set; }
+
+    [ObservableProperty]
+    public partial double EditorAnchorEnd { get; set; }
+
+    [ObservableProperty]
+    public partial bool EditorHasConnector { get; set; }
+
+    [ObservableProperty]
+    public partial int EditorAnchorColumn { get; set; }
+
+    [ObservableProperty]
+    public partial int EditorAnchorColumns { get; set; } = 1;
+
+    /// <summary>Width kept free on the ribbon's right while the editor card is open.</summary>
+    public double ReserveRight => IsEditorOpen ? EditorReserve : 0;
 
     // Delete confirmation state.
     [ObservableProperty]
@@ -121,6 +195,17 @@ public sealed partial class PlanViewModel : ViewModelBase
 
     public bool ShowCustomDays => RepeatIndex == 3;
 
+    /// <summary>The day chips are shown for every repeat mode but only clickable for "Özel".</summary>
+    public bool CanEditDays => CanEditRecurrence && RepeatIndex == 3;
+
+    public bool IsRepeatNone { get => RepeatIndex == 0; set { if (value) RepeatIndex = 0; } }
+
+    public bool IsRepeatEveryDay { get => RepeatIndex == 1; set { if (value) RepeatIndex = 1; } }
+
+    public bool IsRepeatWeekdays { get => RepeatIndex == 2; set { if (value) RepeatIndex = 2; } }
+
+    public bool IsRepeatCustom { get => RepeatIndex == 3; set { if (value) RepeatIndex = 3; } }
+
     public string RecurrenceHint => IsEditingRecurring
         ? "Tekrar ayarı tüm seriye uygulanır."
         : IsEditingOneOff ? "Tek seferlik blok tekrarlı yapılamaz." : string.Empty;
@@ -130,6 +215,22 @@ public sealed partial class PlanViewModel : ViewModelBase
         CloseEditor();
         CancelDelete();
         Refresh();
+        GoTodayCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsEditorOpenChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ReserveRight));
+        UpdateEditingFlags();
+    }
+
+    partial void OnRepeatIndexChanged(int value)
+    {
+        // Presets show their weekdays in the chips; "Özel" starts from whatever is currently selected.
+        var preset = value switch { 1 => WeekDays.EveryDay, 2 => WeekDays.Weekdays, _ => WeekDays.None };
+        if (preset != WeekDays.None)
+            foreach (var toggle in DayToggles)
+                toggle.IsChecked = (preset & toggle.Day) != 0;
     }
 
     // ---- Navigation ----
@@ -137,8 +238,11 @@ public sealed partial class PlanViewModel : ViewModelBase
     [RelayCommand]
     private void PreviousDay() => SelectedDay = SelectedDay.AddDays(-1);
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanGoToday))]
     private void GoToday() => SelectedDay = Today();
+
+    /// <summary>"Bugün" is disabled while today is already shown.</summary>
+    private bool CanGoToday() => SelectedDay != Today();
 
     [RelayCommand]
     private void NextDay() => SelectedDay = SelectedDay.AddDays(1);
@@ -150,25 +254,41 @@ public sealed partial class PlanViewModel : ViewModelBase
     public void Refresh()
     {
         var day = SelectedDay;
-        DayText = PlanFormat.LongDate(day);
+        DayText = FormatDay(day);
         Items.Clear();
         TaskRows.Clear();
+        RecentTags.Clear();
         try
         {
             var occurrences = _service.GetOccurrences(day, TimeZoneInfo.Local);
             var sessions = _sessions.GetByDay(day, TimeZoneInfo.Local);
             var canStart = day == Today();
-            foreach (var o in occurrences)
-                Items.Add(new PlanOccurrenceItemViewModel(
-                    o, PlanComparison.ActualForOccurrence(o, sessions), canStart, Start, OpenEdit, RequestDelete));
+            var built = occurrences
+                .Select(o => new PlanOccurrenceItemViewModel(
+                    o, PlanComparison.ActualForOccurrence(o, sessions), canStart, Start, OpenEdit, RequestDelete))
+                .ToList();
+            AssignColumns(built);
+            foreach (var item in built)
+                Items.Add(item);
+            UpdateEditingFlags();
 
             var rows = PlanComparison.ByTask(occurrences, sessions);
             foreach (var row in rows)
-                TaskRows.Add(new TaskComparisonItemViewModel(row));
+                TaskRows.Add(new TaskComparisonItemViewModel(row, TagFor(row.TaskName, occurrences, sessions)));
             var planned = TimeSpan.FromTicks(rows.Sum(r => r.Planned.Ticks));
             var actual = TimeSpan.FromTicks(rows.Sum(r => r.Actual.Ticks));
             SummaryText = $"Planlanan: {PlanFormat.FormatHm(planned)} · Gerçekleşen: {PlanFormat.FormatHm(actual)}";
+            PlannedTotalText = PlanFormat.FormatHm(planned);
+            ActualTotalText = PlanFormat.FormatHm(actual);
+            BlockCountText = $"{occurrences.Count} blok";
+            Ratio = planned > TimeSpan.Zero ? actual / planned : 0;
+            RatioText = $"%{(int)Math.Round(Ratio * 100)}";
             IsEmpty = occurrences.Count == 0;
+
+            foreach (var tag in occurrences.Select(o => o.Block.Tag).Concat(sessions.Select(s => s.Tag))
+                         .Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => t!.Trim())
+                         .Distinct(StringComparer.OrdinalIgnoreCase).Take(3))
+                RecentTags.Add(new TagChipViewModel(tag));
         }
         catch (Exception ex)
         {
@@ -177,7 +297,110 @@ public sealed partial class PlanViewModel : ViewModelBase
             IsEmpty = true;
             ErrorText = "Plan yüklenemedi.";
         }
+
+        UpdateRange();
+        UpdateNow();
     }
+
+    /// <summary>"12 Ekim, Pazartesi" (the year is added only when it is not the current one).</summary>
+    private string FormatDay(DateOnly day) =>
+        day.ToString(day.Year == _today.Year ? "d MMMM, dddd" : "d MMMM yyyy, dddd", Tr);
+
+    private static string? TagFor(string task, IEnumerable<PlanOccurrence> occurrences, IEnumerable<TimeSession> sessions) =>
+        occurrences.Where(o => string.Equals(o.Block.TaskName, task, StringComparison.OrdinalIgnoreCase))
+            .Select(o => o.Block.Tag)
+            .Concat(sessions.Where(s => string.Equals(s.TaskName.Trim(), task, StringComparison.OrdinalIgnoreCase)).Select(s => s.Tag))
+            .FirstOrDefault(t => !string.IsNullOrWhiteSpace(t));
+
+    /// <summary>Greedy side-by-side columns for overlapping blocks (per overlap cluster).</summary>
+    private static void AssignColumns(List<PlanOccurrenceItemViewModel> items)
+    {
+        var ordered = items.OrderBy(i => i.StartMinutes).ThenBy(i => i.EndMinutes).ToList();
+        var cluster = new List<PlanOccurrenceItemViewModel>();
+        var columnEnds = new List<double>();
+        var clusterEnd = double.MinValue;
+
+        void Close()
+        {
+            foreach (var item in cluster)
+                item.ColumnCount = Math.Max(columnEnds.Count, 1);
+            cluster.Clear();
+            columnEnds.Clear();
+        }
+
+        foreach (var item in ordered)
+        {
+            if (cluster.Count > 0 && item.StartMinutes >= clusterEnd)
+                Close();
+            var column = columnEnds.FindIndex(end => end <= item.StartMinutes);
+            if (column < 0)
+            {
+                columnEnds.Add(item.EndMinutes);
+                column = columnEnds.Count - 1;
+            }
+            else
+            {
+                columnEnds[column] = item.EndMinutes;
+            }
+
+            item.Column = column;
+            cluster.Add(item);
+            clusterEnd = cluster.Count == 1 ? item.EndMinutes : Math.Max(clusterEnd, item.EndMinutes);
+        }
+
+        Close();
+    }
+
+    /// <summary>Default 08:00-20:00, widened to whole hours around any block outside it.</summary>
+    private void UpdateRange()
+    {
+        var start = 8;
+        var end = 20;
+        foreach (var item in Items)
+        {
+            start = Math.Min(start, (int)Math.Floor(item.StartMinutes / 60));
+            end = Math.Max(end, (int)Math.Ceiling(item.EndMinutes / 60));
+        }
+
+        RangeStartHour = start;
+        RangeEndHour = Math.Min(end, 24);
+    }
+
+    /// <summary>Moves the "now" marker (selected day is today) and picks the scroll focus.</summary>
+    private void UpdateNow()
+    {
+        var local = TimeZoneInfo.ConvertTime(_time.GetUtcNow(), TimeZoneInfo.Local);
+        var minutes = local.TimeOfDay.TotalMinutes;
+        var showNow = SelectedDay == Today() && minutes >= RangeStartHour * 60 && minutes <= RangeEndHour * 60;
+        NowMinutes = showNow ? minutes : -1;
+        NowText = showNow ? $"{local:HH:mm} · ŞİMDİ" : string.Empty;
+        FocusMinutes = showNow
+            ? minutes
+            : Items.Count > 0 ? Items.Min(i => i.StartMinutes) : RangeStartHour * 60;
+    }
+
+    private void UpdateEditingFlags()
+    {
+        foreach (var item in Items)
+        {
+            item.IsEditing = _editing is { } e && e.Block.Id == item.Occurrence.Block.Id && e.Day == item.Occurrence.Day;
+            item.IsSqueezed = IsEditorOpen;
+        }
+    }
+
+    private static TimeSpan? ParseTime(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
+        var t = text.Trim().Replace('.', ':');
+        return TimeSpan.TryParseExact(t, ["h\\:mm", "hh\\:mm"], CultureInfo.InvariantCulture, out var value)
+            && value >= TimeSpan.Zero && value < TimeSpan.FromHours(24)
+            ? value
+            : null;
+    }
+
+    private static string FormatTime(TimeSpan? value) =>
+        value is { } v ? string.Create(CultureInfo.InvariantCulture, $"{v.Hours:00}:{v.Minutes:00}") : string.Empty;
 
     private void Start(PlanOccurrence occurrence) =>
         _startFromPlan(occurrence.Block.TaskName, occurrence.Block.Tag);
@@ -198,6 +421,9 @@ public sealed partial class PlanViewModel : ViewModelBase
         StartTime = TimeSpan.FromHours(startHour);
         EndTime = TimeSpan.FromHours(startHour + 1);
         SetRecurrenceFields(null);
+        EditorHasConnector = false;
+        EditorAnchorStart = RangeStartHour * 60;
+        EditorAnchorEnd = EditorAnchorStart;
         OpenEditor();
     }
 
@@ -212,6 +438,12 @@ public sealed partial class PlanViewModel : ViewModelBase
         StartTime = block.Start.ToTimeSpan();
         EndTime = block.End.ToTimeSpan();
         SetRecurrenceFields(block.Recurrence);
+        var item = Items.FirstOrDefault(i => i.Occurrence == occurrence);
+        EditorHasConnector = true;
+        EditorAnchorStart = block.Start.ToTimeSpan().TotalMinutes;
+        EditorAnchorEnd = block.End.ToTimeSpan().TotalMinutes;
+        EditorAnchorColumn = item?.Column ?? 0;
+        EditorAnchorColumns = item?.ColumnCount ?? 1;
         OpenEditor();
     }
 
@@ -234,6 +466,7 @@ public sealed partial class PlanViewModel : ViewModelBase
         ErrorText = string.Empty;
         IsEditorOpen = true;
         NotifyEditorMode();
+        UpdateEditingFlags();
     }
 
     private void NotifyEditorMode()
@@ -242,6 +475,7 @@ public sealed partial class PlanViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsEditingOneOff));
         OnPropertyChanged(nameof(IsEditingRecurring));
         OnPropertyChanged(nameof(CanEditRecurrence));
+        OnPropertyChanged(nameof(CanEditDays));
         OnPropertyChanged(nameof(RecurrenceHint));
     }
 
@@ -256,6 +490,7 @@ public sealed partial class PlanViewModel : ViewModelBase
         _editing = null;
         ErrorText = string.Empty;
         NotifyEditorMode();
+        UpdateEditingFlags();
     }
 
     /// <summary>"Ekle" (new block) or "Kaydet" (one-off).</summary>
@@ -375,6 +610,17 @@ public sealed partial class PlanViewModel : ViewModelBase
 
     // ---- Delete ----
 
+    /// <summary>"Sil" in the editor card.</summary>
+    [RelayCommand]
+    private void DeleteEditing()
+    {
+        if (_editing is { } editing)
+            RequestDelete(editing);
+    }
+
+    [RelayCommand]
+    private void PickTag(string? tag) => Tag = tag;
+
     private void RequestDelete(PlanOccurrence occurrence)
     {
         if (!occurrence.IsRecurring)
@@ -434,6 +680,8 @@ public sealed partial class PlanViewModel : ViewModelBase
         {
             var now = _time.GetUtcNow();
             var today = Today();
+            UpdateNow();
+            GoTodayCommand.NotifyCanExecuteChanged();
             if (today != _today)
             {
                 var follow = SelectedDay == _today;

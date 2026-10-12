@@ -17,7 +17,19 @@ const string ZoneId = "Europe/Istanbul";
 Environment.SetEnvironmentVariable("TZ", ZoneId); // view models read TimeZoneInfo.Local
 TimeZoneInfo.ClearCachedData();
 
-var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "plan", "plan-editor", "today", "today-recovery", "timer-recovery", "report" };
+// Optional "--size WxH" (default 1200x780) may appear anywhere after <outDir>.
+var width = 1200;
+var height = 780;
+var sizeAt = Array.IndexOf(args, "--size");
+if (sizeAt >= 0 && sizeAt + 1 < args.Length)
+{
+    var parts = args[sizeAt + 1].Split('x');
+    width = int.Parse(parts[0]);
+    height = int.Parse(parts[1]);
+    args = args.Where((_, i) => i != sizeAt && i != sizeAt + 1).ToArray();
+}
+
+var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "plan", "plan-editor", "plan-editor-new", "plan-empty", "plan-delete-confirm", "today", "today-recovery", "timer-recovery", "report" };
 if (args.Length == 0)
 {
     Console.Error.WriteLine("Usage: TheTimer.Screenshots <outDir> [scenario...]");
@@ -46,13 +58,13 @@ var zone = TimeZoneInfo.FindSystemTimeZoneById(ZoneId);
 foreach (var name in scenarios)
 {
     var path = Path.Combine(outDir, name + ".png");
-    Render(name, path, zone);
+    Render(name, path, zone, width, height);
     Console.WriteLine(path);
 }
 
 return 0;
 
-static void Render(string scenario, string path, TimeZoneInfo zone)
+static void Render(string scenario, string path, TimeZoneInfo zone, int width, int height)
 {
     var start = new DateTimeOffset(DemoData.Today.ToDateTime(DemoData.Now), zone.GetUtcOffset(DemoData.Today.ToDateTime(DemoData.Now)));
     var clock = new FakeTimeProvider(start, zone);
@@ -70,7 +82,7 @@ static void Render(string scenario, string path, TimeZoneInfo zone)
     }
 
     var vm = AppComposition.Create(sessions, activeStore, plans, clock, new NoOpNotifier());
-    var window = new MainWindow { DataContext = vm, Width = 1200, Height = 780 };
+    var window = new MainWindow { DataContext = vm, Width = width, Height = height };
     window.Show();
     Pump();
 
@@ -93,6 +105,23 @@ static void Render(string scenario, string path, TimeZoneInfo zone)
             Pump();
             var recurring = vm.Plan!.Items.First(i => i.IsRecurring);
             recurring.EditCommand.Execute(null);
+            vm.Plan.RepeatIndex = 3; // show the custom day chips
+            break;
+        case "plan-editor-new":
+            vm.SelectedTabIndex = 1;
+            Pump();
+            vm.Plan!.NewBlockCommand.Execute(null);
+            break;
+        case "plan-empty":
+            vm.SelectedTabIndex = 1;
+            Pump();
+            vm.Plan!.PreviousDayCommand.Execute(null); // Sunday: no blocks
+            break;
+        case "plan-delete-confirm":
+            vm.SelectedTabIndex = 1;
+            Pump();
+            vm.Plan!.Items.First(i => i.IsRecurring).EditCommand.Execute(null);
+            vm.Plan.DeleteEditingCommand.Execute(null);
             break;
         case "today":
         case "today-recovery":
