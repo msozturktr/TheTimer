@@ -41,6 +41,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _activeStore = activeStore;
         _timeProvider = timeProvider;
         _notifier = notifier;
+        InitTimerView();
 
         _ticker = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _ticker.Tick += (_, _) => OnTick();
@@ -50,6 +51,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _dayWatcher.Tick += (_, _) =>
         {
             TouchActiveSession();
+            UpdateClock();
             if (CurrentDay() != _loadedDay)
                 RefreshTodaySessions();
         };
@@ -503,6 +505,7 @@ public partial class MainWindowViewModel : ViewModelBase
             });
 
         UpdateTrayToolTip();
+        UpdateDial();
     }
 
     private void UpdateTrayToolTip()
@@ -581,6 +584,7 @@ public partial class MainWindowViewModel : ViewModelBase
             includesRunning = true;
         }
 
+        TotalToday = total;
         TotalText = $"Toplam: {FormatDuration(total)}";
         UpdateTodayHeader(total, includesRunning);
     }

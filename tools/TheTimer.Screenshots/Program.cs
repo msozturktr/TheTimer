@@ -17,7 +17,7 @@ const string ZoneId = "Europe/Istanbul";
 Environment.SetEnvironmentVariable("TZ", ZoneId); // view models read TimeZoneInfo.Local
 TimeZoneInfo.ClearCachedData();
 
-var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "plan", "plan-editor", "today", "today-recovery", "timer-recovery", "report", "report-empty", "today-empty", "today-running" };
+var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "timer-running-stopwatch", "timer-countdown", "plan", "plan-editor", "today", "today-recovery", "timer-recovery", "report", "report-empty", "today-empty", "today-running" };
 if (args.Length == 0)
 {
     Console.Error.WriteLine("Usage: TheTimer.Screenshots <outDir> [scenario...]");
@@ -28,13 +28,17 @@ if (args.Length == 0)
 // Optional "--size WxH" (default 1200x780) may appear anywhere after the output directory.
 var width = 1200;
 var height = 780;
+string? sizeSuffix = null; // appended to file names when --size is given
 var rest = new List<string>(args[1..]);
 var sizeAt = rest.IndexOf("--size");
 if (sizeAt >= 0 && sizeAt + 1 < rest.Count)
 {
     var parts = rest[sizeAt + 1].Split('x');
     if (parts.Length == 2 && int.TryParse(parts[0], out var w) && int.TryParse(parts[1], out var h))
+    {
         (width, height) = (w, h);
+        sizeSuffix = $"-{w}x{h}";
+    }
     rest.RemoveRange(sizeAt, 2);
 }
 
@@ -58,7 +62,7 @@ AppBuilder.Configure<App>()
 var zone = TimeZoneInfo.FindSystemTimeZoneById(ZoneId);
 foreach (var name in scenarios)
 {
-    var path = Path.Combine(outDir, name + ".png");
+    var path = Path.Combine(outDir, name + sizeSuffix + ".png");
     Render(name, path, zone, width, height);
     Console.WriteLine(path);
 }
@@ -101,6 +105,25 @@ static void Render(string scenario, string path, TimeZoneInfo zone, int width, i
             clock.Advance(TimeSpan.FromSeconds(-(9 * 60 + 31)));
             vm.StartCommand.Execute(null);
             clock.Advance(TimeSpan.FromSeconds(9 * 60 + 31));
+            Pump(800);
+            break;
+        case "timer-running-stopwatch":
+            vm.Mode = TimerMode.Stopwatch;
+            vm.TaskName = "Kod inceleme";
+            vm.Tag = "yazılım";
+            clock.Advance(TimeSpan.FromSeconds(-(72 * 60 + 30)));
+            vm.StartCommand.Execute(null);
+            clock.Advance(TimeSpan.FromSeconds(72 * 60 + 30));
+            Pump(800);
+            break;
+        case "timer-countdown":
+            vm.Mode = TimerMode.Countdown;
+            vm.TaskName = "Literatür okuma";
+            vm.Tag = "araştırma";
+            vm.CountdownMinutes = 45;
+            clock.Advance(TimeSpan.FromSeconds(-(17 * 60 + 20)));
+            vm.StartCommand.Execute(null);
+            clock.Advance(TimeSpan.FromSeconds(17 * 60 + 20));
             Pump(800);
             break;
         case "plan":
