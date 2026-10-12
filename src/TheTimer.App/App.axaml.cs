@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using TheTimer.App.Services;
 using TheTimer.App.ViewModels;
 using TheTimer.App.Views;
 using TheTimer.Core.Sessions;
@@ -23,7 +24,8 @@ public partial class App : Application
                 DataContext = new MainWindowViewModel(
                     new SessionTimer(TimeProvider.System),
                     new InMemorySessionRepository(),
-                    TimeProvider.System),
+                    TimeProvider.System,
+                    new FreedesktopNotifier()),
             };
         }
 

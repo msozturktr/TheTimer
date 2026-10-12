@@ -9,24 +9,40 @@
         Width="420" Height="560"
         Title="TheTimer">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" Margin="16" RowSpacing="12">
-        <TextBox Grid.Row="0" PlaceholderText="Görev adı"
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" Margin="16" RowSpacing="12">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8"
+                    IsEnabled="{Binding IsEditable}">
+            <RadioButton GroupName="Mode" Content="Kronometre" IsChecked="{Binding IsStopwatchMode}" />
+            <RadioButton GroupName="Mode" Content="Geri sayım" IsChecked="{Binding IsCountdownMode}" />
+            <RadioButton GroupName="Mode" Content="Pomodoro" IsChecked="{Binding IsPomodoroMode}" />
+        </StackPanel>
+        <TextBox Grid.Row="1" PlaceholderText="Görev adı"
                  Text="{Binding TaskName}" IsReadOnly="{Binding !IsEditable}" />
-        <TextBox Grid.Row="1" PlaceholderText="Etiket (isteğe bağlı)"
+        <TextBox Grid.Row="2" PlaceholderText="Etiket (isteğe bağlı)"
                  Text="{Binding Tag}" IsReadOnly="{Binding !IsEditable}" />
 
-        <TextBlock Grid.Row="2" Text="{Binding ElapsedText}"
-                   FontFamily="monospace" FontSize="56" HorizontalAlignment="Center" />
-        <TextBlock Grid.Row="3" Text="{Binding StateText}" HorizontalAlignment="Center" Opacity="0.7" />
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8"
+                    IsVisible="{Binding IsCountdownMode}">
+            <TextBlock Text="Süre (dk)" VerticalAlignment="Center" />
+            <NumericUpDown Value="{Binding CountdownMinutes}" Minimum="1" Maximum="600" Increment="1"
+                           FormatString="0" IsEnabled="{Binding IsEditable}" Width="140" />
+        </StackPanel>
+        <TextBlock Grid.Row="3" Text="{Binding PhaseText}" IsVisible="{Binding IsPomodoroMode}"
+                   HorizontalAlignment="Center" FontSize="18" />
 
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+        <TextBlock Grid.Row="4" Text="{Binding ElapsedText}"
+                   FontFamily="monospace" FontSize="56" HorizontalAlignment="Center" />
+        <TextBlock Grid.Row="5" Text="{Binding StateText}" HorizontalAlignment="Center" Opacity="0.7" />
+
+        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
             <Button Content="Başlat" Command="{Binding StartCommand}" />
             <Button Content="Duraklat" Command="{Binding PauseCommand}" IsVisible="{Binding !IsPaused}" />
             <Button Content="Devam" Command="{Binding ResumeCommand}" IsVisible="{Binding IsPaused}" />
             <Button Content="Durdur" Command="{Binding StopCommand}" />
+            <Button Content="Sıfırla" Command="{Binding ResetPomodoroCommand}" IsVisible="{Binding IsPomodoroMode}" />
         </StackPanel>
 
-        <Grid Grid.Row="5" RowDefinitions="Auto,*" RowSpacing="8">
+        <Grid Grid.Row="7" RowDefinitions="Auto,*" RowSpacing="8">
             <TextBlock Grid.Row="0" Text="Bugünkü oturumlar" FontWeight="SemiBold" FontSize="16" />
             <ScrollViewer Grid.Row="1">
                 <ItemsControl ItemsSource="{Binding TodaySessions}">
