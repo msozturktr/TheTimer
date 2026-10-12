@@ -10,6 +10,27 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
+    private WindowState _stateBeforeFullScreen = WindowState.Normal;
+
+    /// <summary>F11 toggles full screen and restores the previous window state.</summary>
+    protected override void OnKeyDown(Avalonia.Input.KeyEventArgs e)
+    {
+        if (e.Key == Avalonia.Input.Key.F11)
+        {
+            if (WindowState == WindowState.FullScreen)
+                WindowState = _stateBeforeFullScreen;
+            else
+            {
+                _stateBeforeFullScreen = WindowState;
+                WindowState = WindowState.FullScreen;
+            }
+            e.Handled = true;
+            return;
+        }
+
+        base.OnKeyDown(e);
+    }
+
     protected override void OnClosing(WindowClosingEventArgs e)
     {
         if (!e.IsProgrammatic && DataContext is MainWindowViewModel vm && vm.ShouldHideOnClose())
