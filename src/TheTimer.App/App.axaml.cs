@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using TheTimer.App.ViewModels;
 using TheTimer.App.Views;
+using TheTimer.Core.Sessions;
 
 namespace TheTimer.App;
 
@@ -19,7 +20,10 @@ public partial class App : Application
         {
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(),
+                DataContext = new MainWindowViewModel(
+                    new SessionTimer(TimeProvider.System),
+                    new InMemorySessionRepository(),
+                    TimeProvider.System),
             };
         }
 

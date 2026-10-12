@@ -9,12 +9,39 @@
         Width="420" Height="560"
         Title="TheTimer">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel />
-    </Design.DataContext>
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" Margin="16" RowSpacing="12">
+        <TextBox Grid.Row="0" PlaceholderText="Görev adı"
+                 Text="{Binding TaskName}" IsReadOnly="{Binding !IsEditable}" />
+        <TextBox Grid.Row="1" PlaceholderText="Etiket (isteğe bağlı)"
+                 Text="{Binding Tag}" IsReadOnly="{Binding !IsEditable}" />
 
-    <TextBlock Text="{Binding Placeholder}"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center" />
+        <TextBlock Grid.Row="2" Text="{Binding ElapsedText}"
+                   FontFamily="monospace" FontSize="56" HorizontalAlignment="Center" />
+        <TextBlock Grid.Row="3" Text="{Binding StateText}" HorizontalAlignment="Center" Opacity="0.7" />
 
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+            <Button Content="Başlat" Command="{Binding StartCommand}" />
+            <Button Content="Duraklat" Command="{Binding PauseCommand}" IsVisible="{Binding !IsPaused}" />
+            <Button Content="Devam" Command="{Binding ResumeCommand}" IsVisible="{Binding IsPaused}" />
+            <Button Content="Durdur" Command="{Binding StopCommand}" />
+        </StackPanel>
+
+        <Grid Grid.Row="5" RowDefinitions="Auto,*" RowSpacing="8">
+            <TextBlock Grid.Row="0" Text="Bugünkü oturumlar" FontWeight="SemiBold" FontSize="16" />
+            <ScrollViewer Grid.Row="1">
+                <ItemsControl ItemsSource="{Binding TodaySessions}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SessionItemViewModel">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Margin="0,4">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding TaskName}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DurationText}" FontFamily="monospace" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Tag}" IsVisible="{Binding HasTag}" Opacity="0.6" FontSize="12" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TimeRange}" Opacity="0.6" FontSize="12" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
 </Window>
