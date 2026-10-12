@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=TheTimer
+GenericName=Zaman Takibi
+Comment=Süre tutma, süre takibi ve gün planlaması
+Exec=TheTimer
+Icon=thetimer
+Categories=Office;ProjectManagement;
+Terminal=false
+StartupWMClass=TheTimer
