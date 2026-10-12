@@ -17,7 +17,7 @@ const string ZoneId = "Europe/Istanbul";
 Environment.SetEnvironmentVariable("TZ", ZoneId); // view models read TimeZoneInfo.Local
 TimeZoneInfo.ClearCachedData();
 
-var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "timer-running-stopwatch", "timer-countdown", "plan", "plan-editor", "today", "today-recovery", "timer-recovery", "report", "report-empty", "today-empty", "today-running" };
+var allScenarios = new[] { "timer-idle", "timer-running-pomodoro", "timer-running-stopwatch", "timer-countdown", "plan", "plan-editor", "plan-editor-new", "plan-empty", "plan-delete-confirm", "today", "today-recovery", "timer-recovery", "report", "report-empty", "today-empty", "today-running" };
 if (args.Length == 0)
 {
     Console.Error.WriteLine("Usage: TheTimer.Screenshots <outDir> [scenario...]");
@@ -134,6 +134,23 @@ static void Render(string scenario, string path, TimeZoneInfo zone, int width, i
             Pump();
             var recurring = vm.Plan!.Items.First(i => i.IsRecurring);
             recurring.EditCommand.Execute(null);
+            vm.Plan.RepeatIndex = 3; // show the custom day chips
+            break;
+        case "plan-editor-new":
+            vm.SelectedTabIndex = 1;
+            Pump();
+            vm.Plan!.NewBlockCommand.Execute(null);
+            break;
+        case "plan-empty":
+            vm.SelectedTabIndex = 1;
+            Pump();
+            vm.Plan!.PreviousDayCommand.Execute(null); // Sunday: no blocks
+            break;
+        case "plan-delete-confirm":
+            vm.SelectedTabIndex = 1;
+            Pump();
+            vm.Plan!.Items.First(i => i.IsRecurring).EditCommand.Execute(null);
+            vm.Plan.DeleteEditingCommand.Execute(null);
             break;
         case "today-running":
             vm.SelectedTabIndex = 2;

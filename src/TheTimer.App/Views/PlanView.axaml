@@ -2,153 +2,506 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:TheTimer.App.ViewModels"
              xmlns:c="using:TheTimer.App.Controls"
+             xmlns:p="using:TheTimer.App.Controls.Plan"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="720"
+             mc:Ignorable="d" d:DesignWidth="1112" d:DesignHeight="780"
              x:Class="TheTimer.App.Views.PlanView"
-             x:DataType="vm:PlanViewModel">
+             x:DataType="vm:PlanViewModel"
+             Focusable="True">
+
+    <UserControl.Resources>
+        <StreamGeometry x:Key="Icon.ClockFace">M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17Z M12 7.5V12l3.2 1.9</StreamGeometry>
+        <StreamGeometry x:Key="Icon.Close">M6.5 6.5l11 11 M17.5 6.5l-11 11</StreamGeometry>
+    </UserControl.Resources>
 
     <UserControl.Styles>
-        <Style Selector="TextBlock.positive">
-            <Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <!-- Block capsule -->
+        <Style Selector="Border.block">
+            <Setter Property="Background" Value="{DynamicResource Brush.Raised}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Brush.Hairline}" />
         </Style>
-        <Style Selector="TextBlock.negative">
-            <Setter Property="Foreground" Value="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+        <Style Selector="Border.block:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Brush.RaisedHover}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Brush.HairlineStrong}" />
+        </Style>
+        <Style Selector="Border.block.editing">
+            <Setter Property="BorderBrush" Value="{DynamicResource Brush.AmberRing}" />
+            <Setter Property="BoxShadow" Value="{DynamicResource Shadow.ActualGlowSoft}" />
+        </Style>
+
+        <!-- Pills -->
+        <Style Selector="Border.pill">
+            <Setter Property="CornerRadius" Value="999" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.pill.tag">
+            <Setter Property="Background" Value="#147DD3FC" />
+            <Setter Property="BorderBrush" Value="#337DD3FC" />
+        </Style>
+        <Style Selector="Border.pill.repeat">
+            <Setter Property="Background" Value="#0FFFFFFF" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Brush.Hairline}" />
+        </Style>
+        <Style Selector="Border.pill.warn">
+            <Setter Property="Background" Value="#1FFF6B81" />
+            <Setter Property="BorderBrush" Value="#59FF6B81" />
+        </Style>
+        <Style Selector="Border.diff">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="Background" Value="#0FFFFFFF" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Brush.Hairline}" />
+        </Style>
+        <Style Selector="Border.diff.pos">
+            <Setter Property="Background" Value="#1F5EEAD4" />
+            <Setter Property="BorderBrush" Value="#475EEAD4" />
+        </Style>
+        <Style Selector="Border.diff.neg">
+            <Setter Property="Background" Value="#1FFF6B81" />
+            <Setter Property="BorderBrush" Value="#47FF6B81" />
+        </Style>
+        <Style Selector="TextBlock.micro">
+            <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="TextBlock.col-label">
+            <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+            <Setter Property="FontSize" Value="9" />
+            <Setter Property="LetterSpacing" Value="1" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+
+        <!-- Quiet / danger text buttons -->
+        <Style Selector="Button.ghost.quiet /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource Brush.TextSecondary}" />
+        </Style>
+        <Style Selector="Button.ghost.quiet:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource Brush.TextPrimary}" />
+        </Style>
+        <Style Selector="Button.ghost.danger /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource Brush.Rose}" />
+        </Style>
+        <Style Selector="Button.ghost.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="#59FF6B81" />
+            <Setter Property="Foreground" Value="{DynamicResource Brush.Rose}" />
+        </Style>
+        <Style Selector="Button.ghost.danger.outline /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="#59FF6B81" />
+        </Style>
+        <Style Selector="Border.block Button.round.primary /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BoxShadow" Value="none" />
+        </Style>
+        <Style Selector="Border.block Button.round.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BoxShadow" Value="none" />
+        </Style>
+        <Style Selector="Button.tagchip">
+            <Setter Property="Padding" Value="10,3" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="TextBox.time">
+            <Setter Property="Padding" Value="38,9,12,9" />
+            <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
         </Style>
     </UserControl.Styles>
 
-    <ScrollViewer>
-        <StackPanel Margin="24,16" Spacing="10" MaxWidth="880">
-            <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="6">
-                <Button Grid.Column="0" Classes="round" Command="{Binding PreviousDayCommand}" ToolTip.Tip="Önceki gün"><c:Icon Data="{StaticResource Icon.ChevronLeft}" Width="18" Height="18" /></Button>
-                <Button Grid.Column="1" Classes="ghost" Content="Bugün" Command="{Binding GoTodayCommand}" />
-                <Button Grid.Column="2" Classes="round" Command="{Binding NextDayCommand}" ToolTip.Tip="Sonraki gün"><c:Icon Data="{StaticResource Icon.ChevronRight}" Width="18" Height="18" /></Button>
-                <Button Grid.Column="4" Classes="primary" Content="＋ Blok ekle" Command="{Binding NewBlockCommand}" />
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- ===== Header ===== -->
+        <Border Grid.Row="0" BorderBrush="{DynamicResource Brush.Hairline}" BorderThickness="0,0,0,1" Padding="32,20,28,16">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="14">
+                <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="PLAN" Classes="overline amber" />
+                    <TextBlock Text="{Binding DayText}" Classes="h1" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <Border Grid.Column="1" Classes="segments" VerticalAlignment="Center" Padding="3">
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Button Classes="ghost quiet" Width="34" Height="34" Padding="0" Command="{Binding PreviousDayCommand}" ToolTip.Tip="Önceki gün">
+                            <c:Icon Data="{StaticResource Icon.ChevronLeft}" Width="16" Height="16" HorizontalAlignment="Center" />
+                        </Button>
+                        <Button Classes="ghost quiet" Content="Bugün" Command="{Binding GoTodayCommand}" Padding="14,7" />
+                        <Button Classes="ghost quiet" Width="34" Height="34" Padding="0" Command="{Binding NextDayCommand}" ToolTip.Tip="Sonraki gün">
+                            <c:Icon Data="{StaticResource Icon.ChevronRight}" Width="16" Height="16" HorizontalAlignment="Center" />
+                        </Button>
+                    </StackPanel>
+                </Border>
+                <Button Grid.Column="2" Classes="primary" Command="{Binding NewBlockCommand}" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <c:Icon Data="{StaticResource Icon.Plus}" Width="14" Height="14" StrokeThickness="2" />
+                        <TextBlock Text="Blok ekle" FontFamily="{DynamicResource Font.Mono}" FontSize="13" FontWeight="Medium" />
+                    </StackPanel>
+                </Button>
             </Grid>
-            <TextBlock Text="{Binding DayText}" Classes="h2" />
+        </Border>
 
-            <!-- Add / edit panel -->
-            <Border Classes="panel" IsVisible="{Binding IsEditorOpen}" Padding="16">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="{Binding EditorTitle}" FontWeight="SemiBold" />
-                    <TextBox PlaceholderText="Görev (zorunlu)" Text="{Binding TaskName}" />
-                    <TextBox PlaceholderText="Etiket (isteğe bağlı)" Text="{Binding Tag}" />
-                    <Grid ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="8">
-                        <TextBlock Grid.Column="0" Text="Başlangıç" VerticalAlignment="Center" />
-                        <TimePicker Grid.Column="1" SelectedTime="{Binding StartTime}" MinuteIncrement="5"
-                                    ClockIdentifier="24HourClock" />
-                        <TextBlock Grid.Column="2" Text="Bitiş" VerticalAlignment="Center" />
-                        <TimePicker Grid.Column="3" SelectedTime="{Binding EndTime}" MinuteIncrement="5"
-                                    ClockIdentifier="24HourClock" />
-                    </Grid>
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                        <TextBlock Grid.Column="0" Text="Tekrar" VerticalAlignment="Center" />
-                        <ComboBox Grid.Column="1" ItemsSource="{Binding RepeatOptions}"
-                                  SelectedIndex="{Binding RepeatIndex}" IsEnabled="{Binding CanEditRecurrence}"
-                                  HorizontalAlignment="Stretch" />
-                    </Grid>
-                    <ItemsControl ItemsSource="{Binding DayToggles}" IsVisible="{Binding ShowCustomDays}"
-                                  IsEnabled="{Binding CanEditRecurrence}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:DayToggleViewModel">
-                                <ToggleButton Classes="chip" Content="{Binding Label}" IsChecked="{Binding IsChecked}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding ShowRecurrenceControls}"
-                                IsEnabled="{Binding CanEditRecurrence}">
-                        <TextBlock Text="Bitiş tarihi" VerticalAlignment="Center" />
-                        <CalendarDatePicker SelectedDate="{Binding EndDate}" PlaceholderText="Süresiz" />
-                    </StackPanel>
-                    <TextBlock Text="{Binding RecurrenceHint}" Opacity="0.6" FontSize="12" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding ErrorText}" TextWrapping="Wrap"
-                               Foreground="{DynamicResource SystemControlErrorTextForegroundBrush}" />
+        <!-- Compact summary (shown instead of the right column when narrow) -->
+        <Border Grid.Row="1" x:Name="CompactSummary" IsVisible="False" Padding="32,12,28,12"
+                BorderBrush="{DynamicResource Brush.Hairline}" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Spacing="28" HorizontalAlignment="Left">
+                <StackPanel Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="HEDEF PLAN" Classes="overline cyan" FontSize="9" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Classes="primary" Content="Ekle" Command="{Binding SubmitCommand}" IsVisible="{Binding IsNew}" />
-                        <Button Classes="primary" Content="Kaydet" Command="{Binding SubmitCommand}" IsVisible="{Binding IsEditingOneOff}" />
-                        <Button Classes="ghost" Content="Yalnızca bu gün" Command="{Binding SaveThisDayCommand}"
-                                IsVisible="{Binding IsEditingRecurring}" />
-                        <Button Classes="primary" Content="Bu ve sonraki günler" Command="{Binding SaveFollowingCommand}"
-                                IsVisible="{Binding IsEditingRecurring}" />
-                        <Button Classes="ghost" Content="İptal" Command="{Binding CancelEditCommand}" />
+                        <TextBlock Text="{Binding PlannedTotalText}" Classes="numeral-md cyan" />
+                        <TextBlock Text="{Binding BlockCountText}" Classes="micro faint" VerticalAlignment="Bottom" Margin="0,0,0,3" />
                     </StackPanel>
                 </StackPanel>
-            </Border>
-
-            <!-- Recurring delete confirmation -->
-            <Border Classes="panel" IsVisible="{Binding IsConfirmingDelete}" Padding="16"
-                    BorderBrush="{DynamicResource Brush.Rose}">
-                <StackPanel Spacing="8">
-                    <TextBlock Text="{Binding ConfirmText}" TextWrapping="Wrap" />
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Classes="ghost" Content="Yalnızca bu gün" Command="{Binding ConfirmDeleteThisDayCommand}" />
-                        <Button Classes="ghost" Content="Bu ve sonraki günler" Command="{Binding ConfirmDeleteFollowingCommand}" />
-                        <Button Classes="ghost" Content="Vazgeç" Command="{Binding CancelDeleteCommand}" />
-                    </StackPanel>
+                <p:RatioRing Width="52" Height="52" Ratio="{Binding Ratio}" Text="{Binding RatioText}" />
+                <StackPanel Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="GERÇEKLEŞEN" Classes="overline amber" FontSize="9" />
+                    <TextBlock Text="{Binding ActualTotalText}" Classes="numeral-md amber" />
                 </StackPanel>
-            </Border>
-
-            <TextBlock Text="Bu gün için plan yok." Opacity="0.6" IsVisible="{Binding IsEmpty}" />
-
-            <ItemsControl ItemsSource="{Binding Items}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:PlanOccurrenceItemViewModel">
-                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Margin="0,4" ColumnSpacing="8">
-                            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                                <TextBlock Text="{Binding TimeRange}" Classes="mono amber" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding TaskName}" TextTrimming="CharacterEllipsis"
-                                           FontWeight="SemiBold" VerticalAlignment="Center" />
-                                <c:Icon Data="{StaticResource Icon.Repeat}" Width="14" Height="14" IsVisible="{Binding IsRecurring}" ToolTip.Tip="{Binding RecurrenceTip}"
-                                        Foreground="{DynamicResource Brush.Cyan}" VerticalAlignment="Center" />
-                                <c:Icon Data="{StaticResource Icon.Warning}" Width="14" Height="14" IsVisible="{Binding HasOverlap}" VerticalAlignment="Center"
-                                        Foreground="{DynamicResource Brush.Rose}" ToolTip.Tip="Başka bir blokla çakışıyor" />
-                            </StackPanel>
-                            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="{Binding Tag}" IsVisible="{Binding HasTag}" Opacity="0.6" FontSize="12" />
-                                <TextBlock Text="{Binding ActualText}" Opacity="0.6" FontSize="12" />
-                            </StackPanel>
-                            <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Orientation="Horizontal" Spacing="4"
-                                        VerticalAlignment="Center">
-                                <Button Classes="ghost" Content="Başlat" Command="{Binding StartCommand}" />
-                                <Button Classes="ghost" Content="Düzenle" Command="{Binding EditCommand}" />
-                                <Button Classes="ghost" Content="Sil" Command="{Binding DeleteCommand}" />
-                            </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
-            <StackPanel Spacing="4" IsVisible="{Binding !IsEmpty}">
-                <Separator />
-                <TextBlock Text="{Binding SummaryText}" FontWeight="SemiBold" />
-                <Grid ColumnDefinitions="*,70,70,70" Opacity="0.6">
-                    <TextBlock Grid.Column="0" Text="Görev" />
-                    <TextBlock Grid.Column="1" Text="Planlanan" HorizontalAlignment="Right" />
-                    <TextBlock Grid.Column="2" Text="Gerçek" HorizontalAlignment="Right" />
-                    <TextBlock Grid.Column="3" Text="Fark" HorizontalAlignment="Right" />
-                </Grid>
-                <ItemsControl ItemsSource="{Binding TaskRows}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:TaskComparisonItemViewModel">
-                            <Grid ColumnDefinitions="*,70,70,70" Margin="0,2">
-                                <TextBlock Grid.Column="0" Text="{Binding TaskName}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Grid.Column="1" Text="{Binding PlannedText}" Classes="mono"
-                                           HorizontalAlignment="Right" />
-                                <TextBlock Grid.Column="2" Text="{Binding ActualText}" Classes="mono"
-                                           HorizontalAlignment="Right" />
-                                <TextBlock Grid.Column="3" Text="{Binding DifferenceText}" Classes="mono"
-                                           HorizontalAlignment="Right"
-                                           Classes.positive="{Binding IsPositive}" Classes.negative="{Binding IsNegative}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
             </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+        </Border>
+
+        <!-- ===== Body ===== -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+
+            <!-- Ribbon -->
+            <Grid Grid.Column="0">
+                <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <Grid x:Name="Ribbon" Margin="12,0,24,0">
+                        <p:RibbonBackdrop RangeStartHour="{Binding RangeStartHour}" RangeEndHour="{Binding RangeEndHour}"
+                                          ReserveRight="{Binding ReserveRight}" HasConnector="{Binding EditorHasConnector}"
+                                          AnchorStartMinutes="{Binding EditorAnchorStart}" AnchorEndMinutes="{Binding EditorAnchorEnd}"
+                                          AnchorColumn="{Binding EditorAnchorColumn}" AnchorColumnCount="{Binding EditorAnchorColumns}" />
+                        <ItemsControl ItemsSource="{Binding Items}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <p:PlanTimeline x:DataType="vm:PlanViewModel"
+                                                    RangeStartHour="{Binding RangeStartHour}"
+                                                    RangeEndHour="{Binding RangeEndHour}"
+                                                    ReserveRight="{Binding ReserveRight}" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:PlanOccurrenceItemViewModel">
+                                    <Border Classes="block" Classes.editing="{Binding IsEditing}" Cursor="Hand"
+                                            CornerRadius="14" BorderThickness="1" ClipToBounds="True">
+                                        <Grid>
+                                            <Border Width="4" HorizontalAlignment="Left" Background="{DynamicResource Brush.PlannedVertical}" />
+                                            <Grid Margin="20,0,14,0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                                <!-- Compact: one line -->
+                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"
+                                                            Margin="0,0,0,3" IsVisible="{Binding IsCompact}">
+                                                    <TextBlock Text="{Binding TimeRange}" Classes="mono secondary" FontSize="12" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding TaskName}" FontSize="14" FontWeight="Medium"
+                                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                    <Border Classes="pill tag" IsVisible="{Binding ShowDenseTag}">
+                                                        <TextBlock Text="{Binding TagDisplay}" Classes="micro cyan" />
+                                                    </Border>
+                                                    <c:Icon Data="{StaticResource Icon.Repeat}" Width="13" Height="13" IsVisible="{Binding ShowCompactRepeat}"
+                                                            Foreground="{DynamicResource Brush.TextFaint}" ToolTip.Tip="{Binding RecurrenceTip}" />
+                                                    <c:Icon Data="{StaticResource Icon.Warning}" Width="13" Height="13" IsVisible="{Binding HasOverlap}"
+                                                            Foreground="{DynamicResource Brush.Rose}" ToolTip.Tip="Başka bir blokla çakışıyor" />
+                                                </StackPanel>
+                                                <!-- Full: two rows -->
+                                                <StackPanel Grid.Column="0" Spacing="5" VerticalAlignment="Center" Margin="0,8,0,10" IsVisible="{Binding IsFull}">
+                                                    <WrapPanel>
+                                                        <TextBlock Text="{Binding TimeRange}" Classes="mono secondary" FontSize="12"
+                                                                   VerticalAlignment="Center" Margin="0,0,10,2" />
+                                                        <Border Classes="pill tag" IsVisible="{Binding HasTag}" Margin="0,0,8,2">
+                                                            <TextBlock Text="{Binding TagDisplay}" Classes="micro cyan" />
+                                                        </Border>
+                                                        <Border Classes="pill repeat" IsVisible="{Binding IsRecurring}" Margin="0,0,8,2" ToolTip.Tip="{Binding RecurrenceTip}">
+                                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                                <c:Icon Data="{StaticResource Icon.Repeat}" Width="11" Height="11" Foreground="{DynamicResource Brush.TextSecondary}" />
+                                                                <TextBlock Text="{Binding RecurrenceChip}" Classes="micro secondary" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <Border Classes="pill warn" IsVisible="{Binding HasOverlap}" Margin="0,0,8,2">
+                                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                                <c:Icon Data="{StaticResource Icon.Warning}" Width="11" Height="11" Foreground="{DynamicResource Brush.Rose}" />
+                                                                <TextBlock Text="Çakışma" Classes="micro rose" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </WrapPanel>
+                                                    <TextBlock Text="{Binding TaskName}" FontSize="15" FontWeight="Medium" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                                <!-- Dense: overlapping blocks share the width -->
+                                                <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center" Margin="0,8,0,10" IsVisible="{Binding IsDense}">
+                                                    <WrapPanel>
+                                                        <TextBlock Text="{Binding DenseTime}" Classes="mono secondary" FontSize="11"
+                                                                   VerticalAlignment="Center" Margin="0,0,10,2" />
+                                                        <Border Classes="pill warn" IsVisible="{Binding ShowDenseChip}" Margin="0,0,8,2">
+                                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                                <c:Icon Data="{StaticResource Icon.Warning}" Width="11" Height="11" Foreground="{DynamicResource Brush.Rose}" />
+                                                                <TextBlock Text="Çakışma" Classes="micro rose" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <c:Icon Data="{StaticResource Icon.Warning}" Width="13" Height="13" IsVisible="{Binding ShowDenseIcon}"
+                                                                Foreground="{DynamicResource Brush.Rose}" ToolTip.Tip="Başka bir blokla çakışıyor" VerticalAlignment="Center" />
+                                                    </WrapPanel>
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Text="{Binding TaskName}" FontSize="14" FontWeight="Medium" TextTrimming="CharacterEllipsis" MaxWidth="150" />
+                                                        <TextBlock Text="{Binding TagDisplay}" Classes="micro cyan" IsVisible="{Binding ShowDenseTag}" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <!-- Right: actual / planned + start -->
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                                    <StackPanel VerticalAlignment="Center" Spacing="2" IsVisible="{Binding ShowRatio}">
+                                                        <TextBlock Text="{Binding ActualText}" Classes="mono amber" FontSize="12" HorizontalAlignment="Right"
+                                                                   IsVisible="{Binding !IsIdle}" />
+                                                        <TextBlock Text="{Binding ActualText}" Classes="mono faint" FontSize="12" HorizontalAlignment="Right"
+                                                                   IsVisible="{Binding IsIdle}" />
+                                                        <TextBlock Text="{Binding OverflowText}" Classes="micro mint" HorizontalAlignment="Right"
+                                                                   IsVisible="{Binding HasOverflow}" />
+                                                    </StackPanel>
+                                                    <Button Classes="round primary" Width="30" Height="30" Background="Transparent" Command="{Binding StartCommand}"
+                                                            IsVisible="{Binding CanStart}" ToolTip.Tip="Başlat" VerticalAlignment="Center">
+                                                        <c:Icon Data="{StaticResource Icon.Play}" Width="14" Height="14" IsFilled="True" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
+                                            <p:ThinBar Fraction="{Binding Fraction}" VerticalAlignment="Bottom" Margin="4,0,0,0" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <p:NowLine RangeStartHour="{Binding RangeStartHour}" NowMinutes="{Binding NowMinutes}" Text="{Binding NowText}" />
+
+                        <!-- Floating editor card -->
+                        <p:EditorHost x:Name="EditorLayer" RangeStartHour="{Binding RangeStartHour}"
+                                      AnchorStartMinutes="{Binding EditorAnchorStart}">
+                            <Border x:Name="EditorCard" IsVisible="{Binding IsEditorOpen}" Background="#EB10142B"
+                                    BorderBrush="{DynamicResource Brush.HairlineStrong}" BorderThickness="1" CornerRadius="18"
+                                    Padding="22,16,22,18" BoxShadow="0 16 44 0 #99000000, 0 0 30 0 #14FFB547">
+                                <Grid RowDefinitions="Auto,*,Auto">
+                                    <StackPanel Grid.Row="0" Spacing="12">
+                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                                        <Border Grid.Column="0" Width="8" Height="8" CornerRadius="4" VerticalAlignment="Center"
+                                                Background="{DynamicResource Brush.Amber}" BoxShadow="{DynamicResource Shadow.AmberDot}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding EditorTitle}" FontSize="16" FontWeight="Medium" VerticalAlignment="Center" />
+                                        <Button Grid.Column="2" Classes="ghost danger" Content="Sil" Padding="10,4"
+                                                Command="{Binding DeleteEditingCommand}" IsVisible="{Binding !IsNew}" VerticalAlignment="Center" />
+                                        <Button Grid.Column="3" Classes="round" Width="30" Height="30" Command="{Binding CancelEditCommand}"
+                                                ToolTip.Tip="Kapat">
+                                            <c:Icon Data="{StaticResource Icon.Close}" Width="14" Height="14" />
+                                        </Button>
+                                    </Grid>
+                                    <Border Height="1" Background="{DynamicResource Brush.Hairline}" />
+                                    </StackPanel>
+                                    <ScrollViewer Grid.Row="1" Margin="-4,12,-4,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                        <StackPanel Spacing="12" Margin="4,0,4,0">
+
+
+                                    <StackPanel>
+                                        <TextBlock Text="GÖREV BAŞLIĞI" Classes="field-label" />
+                                        <TextBox Text="{Binding TaskName}" PlaceholderText="Ne üzerinde çalışacaksın?" />
+                                    </StackPanel>
+
+                                    <StackPanel>
+                                        <TextBlock Text="ETİKET" Classes="field-label" />
+                                        <TextBox Text="{Binding Tag}" PlaceholderText="isteğe bağlı" />
+                                        <ItemsControl ItemsSource="{Binding RecentTags}" Margin="0,8,0,0" IsVisible="{Binding RecentTags.Count}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:TagChipViewModel">
+                                                    <Button Classes="ghost tagchip" Content="{Binding Display}" Margin="0,0,6,6"
+                                                            Command="{Binding $parent[UserControl].((vm:PlanViewModel)DataContext).PickTagCommand}"
+                                                            CommandParameter="{Binding Tag}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+
+                                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="BAŞLANGIÇ" Classes="field-label" />
+                                            <Panel>
+                                                <TextBox Classes="time" Text="{Binding StartText}" PlaceholderText="09:00" />
+                                                <c:Icon Data="{StaticResource Icon.ClockFace}" Width="16" Height="16" HorizontalAlignment="Left"
+                                                        Margin="13,0,0,0" Foreground="{DynamicResource Brush.Cyan}" />
+                                            </Panel>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="BİTİŞ" Classes="field-label" />
+                                            <Panel>
+                                                <TextBox Classes="time" Text="{Binding EndText}" PlaceholderText="10:00" />
+                                                <c:Icon Data="{StaticResource Icon.ClockFace}" Width="16" Height="16" HorizontalAlignment="Left"
+                                                        Margin="13,0,0,0" Foreground="{DynamicResource Brush.Cyan}" />
+                                            </Panel>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel>
+                                        <TextBlock Text="TEKRAR DÖNGÜSÜ" Classes="field-label" />
+                                        <Border Classes="segments" IsEnabled="{Binding CanEditRecurrence}">
+                                            <UniformGrid Rows="1">
+                                                <RadioButton Classes="segment" GroupName="Repeat" Content="Yok" Padding="0,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsChecked="{Binding IsRepeatNone}" />
+                                                <RadioButton Classes="segment" GroupName="Repeat" Content="Her gün" Padding="0,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsChecked="{Binding IsRepeatEveryDay}" />
+                                                <RadioButton Classes="segment" GroupName="Repeat" Content="Hafta içi" Padding="0,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsChecked="{Binding IsRepeatWeekdays}" />
+                                                <RadioButton Classes="segment" GroupName="Repeat" Content="Özel" Padding="0,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsChecked="{Binding IsRepeatCustom}" />
+                                            </UniformGrid>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel IsVisible="{Binding ShowRecurrenceControls}">
+                                        <TextBlock Text="GÜNLER" Classes="field-label" />
+                                        <ItemsControl ItemsSource="{Binding DayToggles}" IsEnabled="{Binding CanEditDays}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Rows="1" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:DayToggleViewModel">
+                                                    <ToggleButton Classes="chip" Width="38" Height="38" Content="{Binding Label}" IsChecked="{Binding IsChecked}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+
+                                    <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding ShowRecurrenceControls}" IsEnabled="{Binding CanEditRecurrence}">
+                                        <TextBlock Grid.Column="0" Text="Bitiş tarihi" Classes="secondary" VerticalAlignment="Center" />
+                                        <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding EndDate}" PlaceholderText="Süresiz" MinWidth="150" />
+                                    </Grid>
+
+                                    <TextBlock Text="{Binding RecurrenceHint}" Classes="faint" FontStyle="Italic" FontSize="12"
+                                               TextWrapping="Wrap" IsVisible="{Binding RecurrenceHint.Length}" />
+
+                                    
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                    <StackPanel Grid.Row="2" Spacing="12">
+                                    <TextBlock Text="{Binding ErrorText}" Classes="rose" TextWrapping="Wrap" FontSize="13"
+                                               IsVisible="{Binding ErrorText.Length}" />
+                                    <Border Height="1" Background="{DynamicResource Brush.Hairline}" />
+
+                                    <!-- Footer -->
+                                    <Grid ColumnDefinitions="Auto,*,*" ColumnSpacing="8" IsVisible="{Binding !IsConfirmingDelete}">
+                                        <Button Grid.Column="0" Classes="ghost quiet" Content="İptal" Command="{Binding CancelEditCommand}"
+                                                VerticalAlignment="Center" />
+                                        <Button Grid.Column="1" Classes="ghost" Command="{Binding SaveThisDayCommand}" IsVisible="{Binding IsEditingRecurring}"
+                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" CornerRadius="14">
+                                            <TextBlock Text="Yalnızca bu gün" TextWrapping="Wrap" TextAlignment="Center" FontFamily="{DynamicResource Font.Mono}" />
+                                        </Button>
+                                        <Button Grid.Column="2" Classes="primary" Command="{Binding SaveFollowingCommand}" IsVisible="{Binding IsEditingRecurring}"
+                                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="10,9" CornerRadius="14">
+                                            <TextBlock Text="Bu ve sonraki günler" TextWrapping="Wrap" TextAlignment="Center" />
+                                        </Button>
+                                        <Button Grid.Column="1" Grid.ColumnSpan="2" Classes="primary" Content="Ekle" Command="{Binding SubmitCommand}"
+                                                IsVisible="{Binding IsNew}" HorizontalAlignment="Right" />
+                                        <Button Grid.Column="1" Grid.ColumnSpan="2" Classes="primary" Content="Kaydet" Command="{Binding SubmitCommand}"
+                                                IsVisible="{Binding IsEditingOneOff}" HorizontalAlignment="Right" />
+                                    </Grid>
+
+                                    <!-- Inline delete choice for recurring blocks -->
+                                    <StackPanel Spacing="10" IsVisible="{Binding IsConfirmingDelete}">
+                                        <TextBlock Text="{Binding ConfirmText}" Classes="rose" TextWrapping="Wrap" FontSize="13" />
+                                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8" RowDefinitions="Auto,Auto" RowSpacing="8">
+                                            <Button Grid.Column="0" Classes="ghost danger outline" Command="{Binding ConfirmDeleteThisDayCommand}"
+                                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                                                <TextBlock Text="Yalnızca bu gün" TextWrapping="Wrap" TextAlignment="Center" FontFamily="{DynamicResource Font.Mono}" />
+                                            </Button>
+                                            <Button Grid.Column="1" Classes="ghost danger outline" Command="{Binding ConfirmDeleteFollowingCommand}"
+                                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                                                <TextBlock Text="Bu ve sonraki günler" TextWrapping="Wrap" TextAlignment="Center" FontFamily="{DynamicResource Font.Mono}" />
+                                            </Button>
+                                            <Button Grid.Row="1" Grid.ColumnSpan="2" Classes="ghost quiet" Content="Vazgeç" Command="{Binding CancelDeleteCommand}"
+                                                    HorizontalAlignment="Center" />
+                                        </Grid>
+                                    </StackPanel>
+
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </p:EditorHost>
+                    </Grid>
+                </ScrollViewer>
+
+                <!-- Empty day -->
+                <StackPanel IsVisible="{Binding IsEmpty}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16"
+                            Margin="0,0,0,40">
+                    <TextBlock Text="Bu gün için plan yok." Classes="serif-italic faint" FontSize="26" HorizontalAlignment="Center" />
+                    <Button Classes="ghost" Command="{Binding NewBlockCommand}" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <c:Icon Data="{StaticResource Icon.Plus}" Width="13" Height="13" StrokeThickness="2" />
+                            <TextBlock Text="Blok ekle" FontFamily="{DynamicResource Font.Mono}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- ===== Right column ===== -->
+            <Border Grid.Column="1" x:Name="SummaryColumn" Classes="panel" Width="320" CornerRadius="0" Padding="0"
+                    BorderThickness="1,0,0,0">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="22,24,22,24" Spacing="20">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="PLANLANAN — GERÇEKLEŞEN" Classes="overline amber" />
+                            <Border Height="1" Background="{DynamicResource Brush.Hairline}" />
+                        </StackPanel>
+
+                        <Border Classes="card" Padding="14,18" CornerRadius="16">
+                            <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="6">
+                                <StackPanel Grid.Column="0" Spacing="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="HEDEF PLAN" Classes="overline cyan" FontSize="9" LetterSpacing="1" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding PlannedTotalText}" Classes="numeral-lg cyan" FontSize="28" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding BlockCountText}" Classes="micro faint" HorizontalAlignment="Center" />
+                                </StackPanel>
+                                <p:RatioRing Grid.Column="1" Ratio="{Binding Ratio}" Text="{Binding RatioText}" />
+                                <StackPanel Grid.Column="2" Spacing="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="GERÇEKLEŞEN" Classes="overline amber" FontSize="9" LetterSpacing="1" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding ActualTotalText}" Classes="numeral-lg amber" FontSize="28" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Spacing="10" IsVisible="{Binding !IsEmpty}">
+                            <TextBlock Text="GÖREV DAĞILIMI" Classes="overline" />
+                            <Border Classes="card" Padding="12,10,12,0">
+                              <StackPanel>
+                                <Grid ColumnDefinitions="*,44,48,58" Margin="0,0,0,2">
+                                    <TextBlock Grid.Column="0" Text="GÖREV" Classes="col-label faint" HorizontalAlignment="Left" />
+                                    <TextBlock Grid.Column="1" Text="PLAN" Classes="col-label cyan" />
+                                    <TextBlock Grid.Column="2" Text="GERÇEK" Classes="col-label amber" />
+                                    <TextBlock Grid.Column="3" Text="FARK" Classes="col-label faint" />
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding TaskRows}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:TaskComparisonItemViewModel">
+                                            <Border BorderBrush="{DynamicResource Brush.Hairline}" BorderThickness="0,0,0,1" Padding="0,10">
+                                                <Grid ColumnDefinitions="*,44,48,58">
+                                                    <StackPanel Grid.Column="0" Spacing="1" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding TaskName}" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="{Binding TagDisplay}" Classes="micro cyan" FontSize="10" IsVisible="{Binding HasTag}" />
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="1" Text="{Binding PlannedText}" Classes="mono faint" FontSize="12"
+                                                               HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding ActualText}" Classes="mono amber" FontSize="12"
+                                                               HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                                    <Border Grid.Column="3" Classes="diff" Classes.pos="{Binding IsPositive}" Classes.neg="{Binding IsNegative}"
+                                                            VerticalAlignment="Center">
+                                                        <Panel>
+                                                            <TextBlock Text="{Binding DifferenceText}" Classes="micro mint" FontSize="10" IsVisible="{Binding IsPositive}" />
+                                                            <TextBlock Text="{Binding DifferenceText}" Classes="micro rose" FontSize="10" IsVisible="{Binding IsNegative}" />
+                                                            <TextBlock Text="{Binding DifferenceText}" Classes="micro secondary" FontSize="10" IsVisible="{Binding IsNeutral}" />
+                                                        </Panel>
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                              </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
 </UserControl>
