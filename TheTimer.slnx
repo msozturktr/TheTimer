@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TheTimer.App/TheTimer.App.csproj" />
+    <Project Path="src/TheTimer.Core/TheTimer.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TheTimer.Core.Tests/TheTimer.Core.Tests.csproj" />
+  </Folder>
+</Solution>

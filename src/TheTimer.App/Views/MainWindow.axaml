@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TheTimer.App.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="560"
+        x:Class="TheTimer.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="420" Height="560"
+        Title="TheTimer">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <TextBlock Text="{Binding Placeholder}"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
+
+</Window>
