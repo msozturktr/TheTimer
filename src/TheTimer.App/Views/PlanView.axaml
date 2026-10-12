@@ -126,7 +126,7 @@
                         <Button Classes="ghost quiet" Width="34" Height="34" Padding="0" Command="{Binding PreviousDayCommand}" ToolTip.Tip="Önceki gün">
                             <c:Icon Data="{StaticResource Icon.ChevronLeft}" Width="16" Height="16" HorizontalAlignment="Center" />
                         </Button>
-                        <Button Classes="ghost quiet" Content="Bugün" Command="{Binding GoTodayCommand}" Padding="14,7" />
+                        <Button Classes="ghost quiet" Content="{Binding DayNavLabel}" ToolTip.Tip="Bugüne dön" Command="{Binding GoTodayCommand}" Padding="14,7" />
                         <Button Classes="ghost quiet" Width="34" Height="34" Padding="0" Command="{Binding NextDayCommand}" ToolTip.Tip="Sonraki gün">
                             <c:Icon Data="{StaticResource Icon.ChevronRight}" Width="16" Height="16" HorizontalAlignment="Center" />
                         </Button>

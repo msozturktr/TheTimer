@@ -216,6 +216,7 @@ public sealed partial class PlanViewModel : ViewModelBase
         CancelDelete();
         Refresh();
         GoTodayCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(DayNavLabel));
     }
 
     partial void OnIsEditorOpenChanged(bool value)
@@ -240,6 +241,15 @@ public sealed partial class PlanViewModel : ViewModelBase
 
     [RelayCommand(CanExecute = nameof(CanGoToday))]
     private void GoToday() => SelectedDay = Today();
+
+    /// <summary>Relative name of the shown day; the button itself always jumps back to today.</summary>
+    public string DayNavLabel => (SelectedDay.DayNumber - Today().DayNumber) switch
+    {
+        0 => "Bugün",
+        1 => "Yarın",
+        -1 => "Dün",
+        _ => SelectedDay.ToString("d MMM ddd", new System.Globalization.CultureInfo("tr-TR")),
+    };
 
     /// <summary>"Bugün" is disabled while today is already shown.</summary>
     private bool CanGoToday() => SelectedDay != Today();
@@ -682,6 +692,7 @@ public sealed partial class PlanViewModel : ViewModelBase
             var today = Today();
             UpdateNow();
             GoTodayCommand.NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(DayNavLabel));
             if (today != _today)
             {
                 var follow = SelectedDay == _today;
