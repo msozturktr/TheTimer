@@ -15,4 +15,6 @@ public sealed class InMemorySessionRepository : ISessionRepository
             .Where(s => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(s.StartedAt, timeZone).DateTime) == day)
             .OrderByDescending(s => s.StartedAt)
             .ToList();
+
+    public bool Delete(Guid id) => _sessions.RemoveAll(s => s.Id == id) > 0;
 }

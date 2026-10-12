@@ -1,11 +1,14 @@
+using System.Windows.Input;
 using TheTimer.Core.Sessions;
 
 namespace TheTimer.App.ViewModels;
 
 public sealed class SessionItemViewModel
 {
-    public SessionItemViewModel(TimeSession session, TimeZoneInfo timeZone)
+    public SessionItemViewModel(TimeSession session, TimeZoneInfo timeZone, ICommand deleteCommand)
     {
+        Id = session.Id;
+        DeleteCommand = deleteCommand;
         TaskName = session.TaskName;
         Tag = session.Tag;
         var start = TimeZoneInfo.ConvertTime(session.StartedAt, timeZone);
@@ -13,6 +16,10 @@ public sealed class SessionItemViewModel
         TimeRange = $"{start:HH:mm}–{end:HH:mm}";
         DurationText = MainWindowViewModel.FormatDuration(session.Duration);
     }
+
+    public Guid Id { get; }
+
+    public ICommand DeleteCommand { get; }
 
     public string TaskName { get; }
 

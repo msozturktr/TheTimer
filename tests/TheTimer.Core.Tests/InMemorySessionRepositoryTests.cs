@@ -71,4 +71,21 @@ public class InMemorySessionRepositoryTests
     {
         Assert.Empty(new InMemorySessionRepository().GetByDay(new DateOnly(2026, 10, 12), TimeZoneInfo.Utc));
     }
+
+    [Fact]
+    public void Delete_ExistingId_RemovesAndReturnsTrue()
+    {
+        var repo = new InMemorySessionRepository();
+        var s = Make("a", new DateTimeOffset(2026, 10, 12, 8, 0, 0, TimeSpan.Zero));
+        repo.Add(s);
+
+        Assert.True(repo.Delete(s.Id));
+        Assert.Empty(repo.GetByDay(new DateOnly(2026, 10, 12), TimeZoneInfo.Utc));
+    }
+
+    [Fact]
+    public void Delete_UnknownId_ReturnsFalse()
+    {
+        Assert.False(new InMemorySessionRepository().Delete(Guid.NewGuid()));
+    }
 }

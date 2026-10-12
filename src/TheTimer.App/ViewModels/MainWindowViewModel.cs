@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -24,7 +25,10 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly INotifier _notifier;
     private readonly PomodoroCycle _cycle = new();
     private readonly DispatcherTimer _ticker;
+    private readonly DispatcherTimer _dayWatcher;
+    private static readonly CultureInfo TrCulture = new("tr-TR");
     private bool _runningBreak;
+    private DateOnly _loadedDay;
 
     public MainWindowViewModel(SessionTimer timer, ISessionRepository repository, TimeProvider timeProvider, INotifier notifier)
     {
@@ -36,6 +40,14 @@ public partial class MainWindowViewModel : ViewModelBase
         _ticker = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         _ticker.Tick += (_, _) => OnTick();
         _timer.StateChanged += (_, _) => OnTimerStateChanged();
+
+        _dayWatcher = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+        _dayWatcher.Tick += (_, _) =>
+        {
+            if (CurrentDay() != _loadedDay)
+                RefreshTodaySessions();
+        };
+        _dayWatcher.Start();
 
         RefreshTodaySessions();
         UpdatePhaseText();
@@ -88,7 +100,18 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsPaused { get; set; }
 
+    [ObservableProperty]
+    public partial string DateText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string TotalText { get; set; } = FormatDuration(TimeSpan.Zero);
+
+    [ObservableProperty]
+    public partial bool HasSessions { get; set; }
+
     public ObservableCollection<SessionItemViewModel> TodaySessions { get; } = [];
+
+    public ObservableCollection<TaskTotalItemViewModel> TaskTotals { get; } = [];
 
     internal static string FormatDuration(TimeSpan value) =>
         $"{(int)value.TotalHours:00}:{value.Minutes:00}:{value.Seconds:00}";
@@ -177,6 +200,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (_timer.CheckTarget() is { } session)
             HandleCompletion(session);
         UpdateElapsed();
+        UpdateTotal();
     }
 
     private void HandleCompletion(TimeSession session)
@@ -246,6 +270,7 @@ public partial class MainWindowViewModel : ViewModelBase
             _ticker.Stop();
 
         UpdateElapsed();
+        UpdateTotal();
         StartCommand.NotifyCanExecuteChanged();
         PauseCommand.NotifyCanExecuteChanged();
         ResumeCommand.NotifyCanExecuteChanged();
@@ -266,12 +291,42 @@ public partial class MainWindowViewModel : ViewModelBase
             });
     }
 
+    private DateOnly CurrentDay() =>
+        DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(_timeProvider.GetUtcNow(), TimeZoneInfo.Local).DateTime);
+
+    [RelayCommand]
+    private void DeleteSession(Guid id)
+    {
+        _repository.Delete(id);
+        RefreshTodaySessions();
+    }
+
     private void RefreshTodaySessions()
     {
         var tz = TimeZoneInfo.Local;
-        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(_timeProvider.GetUtcNow(), tz).DateTime);
+        _loadedDay = CurrentDay();
+        var sessions = _repository.GetByDay(_loadedDay, tz);
+
+        DateText = _loadedDay.ToDateTime(TimeOnly.MinValue).ToString("d MMMM yyyy dddd", TrCulture);
         TodaySessions.Clear();
-        foreach (var session in _repository.GetByDay(today, tz))
-            TodaySessions.Add(new SessionItemViewModel(session, tz));
+        foreach (var session in sessions)
+            TodaySessions.Add(new SessionItemViewModel(session, tz, DeleteSessionCommand));
+        TaskTotals.Clear();
+        foreach (var total in SessionSummary.ByTask(sessions))
+            TaskTotals.Add(new TaskTotalItemViewModel(total));
+        HasSessions = sessions.Count > 0;
+        _savedTotal = SessionSummary.Total(sessions);
+        UpdateTotal();
+    }
+
+    private TimeSpan _savedTotal;
+
+    private void UpdateTotal()
+    {
+        var total = _savedTotal;
+        if (_timer.State != TimerState.Idle && !_runningBreak && _timer.StartedAt is { } startedAt
+            && DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(startedAt, TimeZoneInfo.Local).DateTime) == _loadedDay)
+            total += _timer.Elapsed;
+        TotalText = $"Toplam: {FormatDuration(total)}";
     }
 }
